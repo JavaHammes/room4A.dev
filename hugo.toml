@@ -16,10 +16,12 @@ homeCollection = "posts"
 showFooter = true
 footerContent = "Created by [JavaHammes](https://github.com/JavaHammes)"
 
-paginationSize=20
+paginationSize = 20
 listDateFormat = "2 Jan 2006"
 
 description= ""
+
+theme = "dark"
 
 [[params.menu]]
 name = "home"
