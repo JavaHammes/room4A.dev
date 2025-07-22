@@ -1,0 +1,4 @@
+baseURL      = 'https://JavaHammes.github.io/room4A.dev'
+languageCode = 'en-us'
+title        = 'room4A'
+theme        = 'typo'
