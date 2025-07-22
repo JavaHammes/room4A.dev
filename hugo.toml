@@ -23,8 +23,8 @@ description= ""
 
 [[params.menu]]
 name = "home"
-url = "/"
+url = "/room4A.dev/"
 
 [[params.menu]]
 name = "posts"
-url = "/posts"
+url = "/room4A.dev/posts/"
