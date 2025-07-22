@@ -1,4 +1,30 @@
-baseURL      = 'https://javahammes.github.io/room4A.dev/'
-languageCode = 'en-us'
-title        = 'room4A'
-theme        = 'typo'
+baseURL      = "https://javahammes.github.io/room4A.dev/"
+languageCode = "en-us"
+title        = "room4A"
+theme        = "typo"
+
+[params]
+homeIntroContent = """
+room4A is a collection of notes, experiments, and observations focused on systems programming, kernel development, and debugging.
+
+[Github](https://github.com/JavaHammes) (I hate LinkedIn)
+"""
+
+homeCollectionTitle = "Posts"
+homeCollection = "posts"
+
+showFooter = true
+footerContent = "Created by [JavaHammes](https://github.com/JavaHammes)"
+
+paginationSize=20
+listDateFormat = "2 Jan 2006"
+
+description= ""
+
+[[params.menu]]
+name = "home"
+url = "/"
+
+[[params.menu]]
+name = "posts"
+url = "/posts"
