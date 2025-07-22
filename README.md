@@ -6,4 +6,4 @@ The blog is about whatever I find currently interesting and what I would like to
 
 But you can expect kernel stuff, low-level programming, and maybe talks about retro tech at some point, who knows.
 
-It's built with [Hugo](https://gohugo.io/) and the [Typo theme](https://github.com/TechTac/typo).
+It's built with [Hugo](https://gohugo.io/) and the [Typo theme](https://github.com/tomfran/typo).
