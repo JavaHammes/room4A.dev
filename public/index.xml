@@ -6,14 +6,28 @@
     <description>Recent content in Home on room4A</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 22 Jul 2025 20:12:48 +0200</lastBuildDate>
+    <lastBuildDate>Wed, 23 Jul 2025 18:15:05 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/room4A.dev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Reflections on Trusting Trust</title>
+      <link>http://localhost:1313/room4A.dev/posts/trusting_trust/</link>
+      <pubDate>Wed, 23 Jul 2025 18:15:05 +0200</pubDate>
+      <guid>http://localhost:1313/room4A.dev/posts/trusting_trust/</guid>
+      <description>&lt;blockquote&gt;&#xA;&lt;p&gt;&lt;em&gt;&amp;ldquo;To what extent should one trust a statement that a program is free of Trojan&#xA;horses? Perhaps it is more important to trust the people who wrote the&#xA;software.&amp;rdquo;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Ken Thompson, &lt;em&gt;Reflections on Trusting Trust&lt;/em&gt; (1984)&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;p&gt;Ken Thompson wrote this in 1984, but it&amp;rsquo;s still just as true today.&lt;/p&gt;&#xA;&lt;p&gt;In this post, I’ll show you that it’s possible to create a program that does something it &lt;strong&gt;shouldn’t&lt;/strong&gt;, even though nothing looks wrong when you read the source code.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>syscall(room4A);</title>
       <link>http://localhost:1313/room4A.dev/posts/syscall_room4a/</link>
       <pubDate>Tue, 22 Jul 2025 20:12:48 +0200</pubDate>
       <guid>http://localhost:1313/room4A.dev/posts/syscall_room4a/</guid>
       <description>&lt;h2 class=&#34;heading&#34; id=&#34;welcome-to-my-first-blog-post-ever&#34;&gt;&#xA;  Welcome to my first blog post. &lt;strong&gt;Ever.&lt;/strong&gt;&#xA;  &lt;a class=&#34;anchor&#34; href=&#34;#welcome-to-my-first-blog-post-ever&#34;&gt;#&lt;/a&gt;&#xA;&lt;/h2&gt;&#xA;&lt;p&gt;I thought about starting with the usual boring stuff, why I’m doing this blog, what you can expect, &amp;hellip;&lt;/p&gt;&#xA;&lt;p&gt;But I won’t.&lt;/p&gt;&#xA;&lt;p&gt;Instead, this post jumps straight into something more exciting:&lt;/p&gt;&#xA;&lt;p&gt;A &lt;strong&gt;tutorial on writing your very own syscall&lt;/strong&gt;, that prints:&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;&amp;ldquo;Knock knock, room4A. Knock knock, room4A. Knock knock, room4A.&amp;rdquo;&lt;/p&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;p&gt;(If you don’t know what a syscall is, well, &lt;a href=&#34;https://www.google.com/search?q=what+is+a+syscall&#34;&gt;Google it&lt;/a&gt;.)&lt;/p&gt;&#xA;&lt;p&gt;It’s a fun little exercise (at least for some people) that’ll introduce you to how I write, how I code, and what kind of posts you can expect in the future.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>About</title>
+      <link>http://localhost:1313/room4A.dev/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/room4A.dev/about/</guid>
+      <description>&lt;p&gt;&lt;em&gt;This page exists because every blog needs an About page. Apparently.&lt;/em&gt;&lt;/p&gt;&#xA;&lt;h3 class=&#34;heading&#34; id=&#34;well-what-should-you-know-about-me&#34;&gt;&#xA;  Well, what should you know about me?&#xA;  &lt;a class=&#34;anchor&#34; href=&#34;#well-what-should-you-know-about-me&#34;&gt;#&lt;/a&gt;&#xA;&lt;/h3&gt;&#xA;&lt;p&gt;I&amp;rsquo;m from Earth. (Seriously.)&lt;/p&gt;&#xA;&lt;p&gt;I&amp;rsquo;ve never watched &lt;em&gt;The Simpsons&lt;/em&gt; or &lt;em&gt;Family Guy&lt;/em&gt;.&lt;/p&gt;&#xA;&lt;p&gt;I drink way too much Coke Zero, and I &lt;strong&gt;don&amp;rsquo;t&lt;/strong&gt; enjoy playing video games.&#xA;The only game I&amp;rsquo;m actually eager to play is chess. Probably because I&amp;rsquo;m super competitive at everything I do.&lt;/p&gt;&#xA;&lt;p&gt;Oh, and something interesting: my real name isn&amp;rsquo;t actually &lt;em&gt;JavaHammes&lt;/em&gt;.&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>

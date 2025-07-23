@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+<head><script src="/room4A.dev/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=room4A.dev/livereload" data-no-instant defer></script>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313/room4A.dev/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/room4A.dev/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/room4A.dev/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313/room4A.dev/android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313/room4A.dev/apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+
+
+<title>
+    
+    Reflections on Trusting Trust | room4A
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/room4A.dev/posts/trusting_trust/"/>
+
+<meta property="og:url" content="http://localhost:1313/room4A.dev/posts/trusting_trust/">
+  <meta property="og:site_name" content="room4A">
+  <meta property="og:title" content="Reflections on Trusting Trust">
+  <meta property="og:description" content="“To what extent should one trust a statement that a program is free of Trojan horses? Perhaps it is more important to trust the people who wrote the software.”
+Ken Thompson, Reflections on Trusting Trust (1984) Ken Thompson wrote this in 1984, but it’s still just as true today.
+In this post, I’ll show you that it’s possible to create a program that does something it shouldn’t, even though nothing looks wrong when you read the source code.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-07-23T18:15:05+02:00">
+    <meta property="article:modified_time" content="2025-07-23T18:15:05+02:00">
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/room4A.dev/assets/combined.min.57df9e7d692553f966cff4593ede6b53efb74da234876bacffeac774bd572e53.css" media="all">
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+</head>
+
+
+
+
+
+
+
+<body class="dark">
+
+  <div class="content">
+    <header>
+      
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">
+        <a href="http://localhost:1313/room4A.dev/">room4A</a>
+    </h1>
+
+    <div class="header-menu">
+        
+
+        
+        
+
+        <p
+            class="small ">
+            <a href="/room4A.dev/" >
+                /home
+            </a>
+        </p>
+        
+
+        <p
+            class="small ">
+            <a href="/room4A.dev/posts/" >
+                /posts
+            </a>
+        </p>
+        
+
+        <p
+            class="small ">
+            <a href="/room4A.dev/about/" >
+                /about
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+    </header>
+
+    <main class="main">
+      
+  <h1>Reflections on Trusting Trust</h1>
+  <p>July 23, 2025</p>
+<blockquote>
+<p><em>&ldquo;To what extent should one trust a statement that a program is free of Trojan
+horses? Perhaps it is more important to trust the people who wrote the
+software.&rdquo;</em></p>
+<ul>
+<li>Ken Thompson, <em>Reflections on Trusting Trust</em> (1984)</li>
+</ul>
+</blockquote>
+<p>Ken Thompson wrote this in 1984, but it&rsquo;s still just as true today.</p>
+<p>In this post, I’ll show you that it’s possible to create a program that does something it <strong>shouldn’t</strong>, even though nothing looks wrong when you read the source code.</p>
+<p>No, I’m not a wizard. No, I’m not on drugs.
+Yes, this is actually possible.</p>
+<p>After this, you’ll think twice before trusting any code you didn&rsquo;t create yourself.</p>
+<p>That&rsquo;ll probably be the most fun part, but I&rsquo;ll also take a moment to reflect on the <em>reflections</em> (yes, pun intended) and explain why this still matters today.</p>
+<hr>
+<p>Just like in real life,  when your dentist assures you &ldquo;this won&rsquo;t hurt&rdquo; and insists &ldquo;you don&rsquo;t need to hold your mom&rsquo;s hand&rdquo;.
+Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
+<p>Man, I hate dentists.</p>
+<p>In the original paper, Ken proudly declares he&rsquo;s going to present &ldquo;the cutest program he ever wrote&rdquo;. What a nerd&hellip;</p>
+<p>He breaks it down into three stages. Here&rsquo;s the first:</p>
+<h2 class="heading" id="stage-1---writing-the-shortest-self-reproducing-program">
+  Stage 1 - <em>Writing the shortest self-reproducing program.</em>
+  <a class="anchor" href="#stage-1---writing-the-shortest-self-reproducing-program">#</a>
+</h2>
+<p>A self-reproducing program is one that, when compiled and executed, prints out its exact own source code.</p>
+<p>Today, we call this kind of program a quine.</p>
+<p>As an example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>program <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;program = </span><span style="color:#e6db74">%r</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">print(program </span><span style="color:#e6db74">%%</span><span style="color:#e6db74"> program)&#34;</span>
+</span></span><span style="display:flex;"><span>print(program <span style="color:#f92672">%</span> program)
+</span></span></code></pre></div><p>when executed, this will output (as you might guess):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>program <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;program = </span><span style="color:#e6db74">%r</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">print(program </span><span style="color:#e6db74">%%</span><span style="color:#e6db74"> program)&#39;</span>
+</span></span><span style="display:flex;"><span>print(program <span style="color:#f92672">%</span> program)
+</span></span></code></pre></div><p>Exactly the same as the source. You have to admit, that&rsquo;s pretty cool.</p>
+<p>How does this work?</p>
+<p>Here&rsquo;s the program again:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>program <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;program = </span><span style="color:#e6db74">%r</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">print(program </span><span style="color:#e6db74">%%</span><span style="color:#e6db74"> program)&#39;</span>
+</span></span><span style="display:flex;"><span>print(program <span style="color:#f92672">%</span> program)
+</span></span></code></pre></div><p>Key parts:</p>
+<ul>
+<li><code>%r</code> gets replaced by the raw string (with quotes and escape characters). That&rsquo;s how it can reproduce itself accurately.</li>
+<li><code>%%</code> escapes the <code>%</code> inside the string so Python doesn&rsquo;t treat it as formatting.</li>
+<li><code>program % program</code> inserts the string into itself.</li>
+</ul>
+<p>What it does:</p>
+<p>It prints:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>program <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;program = </span><span style="color:#e6db74">%r</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">print(program </span><span style="color:#e6db74">%%</span><span style="color:#e6db74"> program)&#39;</span>
+</span></span><span style="display:flex;"><span>print(program <span style="color:#f92672">%</span> program)
+</span></span></code></pre></div><p>Which is exactly the code that was run. That&rsquo;s what makes it a quine, a self-replicating program.</p>
+<h2 class="heading" id="stage-10">
+  Stage 10
+  <a class="anchor" href="#stage-10">#</a>
+</h2>
+<h2 class="heading" id="stage-11">
+  Stage 11
+  <a class="anchor" href="#stage-11">#</a>
+</h2>
+
+
+    </main>
+  </div>
+
+  
+  
+
+
+
+
+
+    
+
+
+
+
+  <footer>
+    
+
+    
+    
+
+
+
+
+
+    
+
+
+
+
+    
+    
+    
+    <p>Created by <a href="https://github.com/JavaHammes">JavaHammes</a></p>
+    
+
+
+  </footer>
+
+  
+</body>
+
+<script src="/room4A.dev/js/theme-switch.js"></script>
+<script defer src="/room4A.dev/js/copy-code.js"></script>
+</html>
