@@ -78,9 +78,85 @@ print(program % program)
 
 Which is exactly the code that was run. That's what makes it a quine, a self-replicating program.
 
-## Stage 10 - *The chicken and egg problem*
+## Stage 10 - *Compilers Learn*
+
+Here's where it gets weird.
+
+Ken makes a subtle but very weird point: when a compiler compiles itself, it can “learn” things that aren't even written in its source code. That knowledge gets baked into the compiler binary, even though it doesn't show up in the code anymore.
+
+Sounds like magic, but here’s a real example to show what's going on.
+
+### Escape Sequences in C
+
+Let’s say you’re building a C compiler from scratch, and you're writing the part that processes string literals:
+
+```c
+printf("Hello\n");
+```
+
+That `\n` is two characters in the source (`'\'` and `'n'`), but we want it to become a single newline character when the program runs. In C, that’s the character `'\n'`, which is just ASCII code `10`.
+
+So your compiler needs code like this:
+
+```c
+c = next();
+if (c == '\\') {
+    c = next();
+    if (c == 'n')
+        c = '\n';
+}
+```
+
+Nice and clean. It says: if you see a backslash followed by an `n`, translate that to a `newline`.
+
+But... there's a catch.
+
+#### How Does the Compiler Know What '\n' Is?
+
+This is where it gets tricky.
+
+You're writing this compiler in C. That means you'll eventually compile this code using a C compiler, possibly the same one you're writing.
+
+But how does your compiler (especially if it's the first one you're bootstrapping) know what `'\n'` even means? You’re literally trying to define `'\n'` using `'\n'`.
+
+That’s a circular definition, and it won’t work the first time around.
+
+#### The Hack: Hardcode It
+
+So here’s what you do: you cheat.
+
+```c
+c = 10;  // ASCII code for newline
+```
+
+You use the actual number instead of the fancy escape character.
+
+Now you compile the compiler, and the result is a binary that understands this translation. That binary, the compiled compiler, now knows that `'n'` maps to `10` in this context.
+
+So later, you can go back and write:
+
+```c
+c = '\n';
+```
+
+But here's the thing...
+
+*The Compiler Has Learned Something*
+
+At this point, the source code doesn't say anything about the number `10`. It just says `'\n'`. But the compiler knows what that means, because the version you built earlier hardcoded it.
+
+That knowledge, the fact that `'n'` = `newline` = `ASCII 10`, only exists in the binary now.
+
+The compiler learned it.
+
+It was smuggled in by the earlier version of the compiler, and now the current version acts like it always knew.
+
+#### Why This Matters
+
+This tiny example leads to a massive idea: a compiler can carry information forward that isn't written down anywhere in its current source code.
+
+It can "remember" things it learned in a previous version.
 
 ## Stage 11 - *The Trojan horse*
-
 
 ---

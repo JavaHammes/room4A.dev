@@ -185,14 +185,64 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>program <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;program = </span><span style="color:#e6db74">%r</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">print(program </span><span style="color:#e6db74">%%</span><span style="color:#e6db74"> program)&#39;</span>
 </span></span><span style="display:flex;"><span>print(program <span style="color:#f92672">%</span> program)
 </span></span></code></pre></div><p>Which is exactly the code that was run. That&rsquo;s what makes it a quine, a self-replicating program.</p>
-<h2 class="heading" id="stage-10">
-  Stage 10
-  <a class="anchor" href="#stage-10">#</a>
+<h2 class="heading" id="stage-10---compilers-learn">
+  Stage 10 - <em>Compilers Learn</em>
+  <a class="anchor" href="#stage-10---compilers-learn">#</a>
 </h2>
-<h2 class="heading" id="stage-11">
-  Stage 11
-  <a class="anchor" href="#stage-11">#</a>
+<p>Here&rsquo;s where it gets weird.</p>
+<p>Ken makes a subtle but very weird point: when a compiler compiles itself, it can “learn” things that aren&rsquo;t even written in its source code. That knowledge gets baked into the compiler binary, even though it doesn&rsquo;t show up in the code anymore.</p>
+<p>Sounds like magic, but here’s a real example to show what&rsquo;s going on.</p>
+<h3 class="heading" id="escape-sequences-in-c">
+  Escape Sequences in C
+  <a class="anchor" href="#escape-sequences-in-c">#</a>
+</h3>
+<p>Let’s say you’re building a C compiler from scratch, and you&rsquo;re writing the part that processes string literals, stuff like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Hello</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+</span></span></code></pre></div><p>That <code>\n</code> is two characters in the source (<code>'\'</code> and <code>'n'</code>), but we want it to become a single newline character when the program runs. In C, that’s the character <code>'\n'</code>, which is just ASCII code <code>10</code>.</p>
+<p>So your compiler needs code like this:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>c <span style="color:#f92672">=</span> <span style="color:#a6e22e">next</span>();
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> (c <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;\\&#39;</span>) {
+</span></span><span style="display:flex;"><span>    c <span style="color:#f92672">=</span> <span style="color:#a6e22e">next</span>();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (c <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;n&#39;</span>)
+</span></span><span style="display:flex;"><span>        c <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\n&#39;</span>;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Nice and clean. It says: if you see a backslash followed by an n, translate that to a newline.</p>
+<p>But&hellip; there&rsquo;s a catch.</p>
+<h4 class="heading" id="how-does-the-compiler-know-what-n-is">
+  How Does the Compiler Know What &lsquo;\n&rsquo; Is?
+  <a class="anchor" href="#how-does-the-compiler-know-what-n-is">#</a>
+</h4>
+<p>This is where it gets tricky.</p>
+<p>You&rsquo;re writing this compiler in C. That means you&rsquo;ll eventually compile this code using a C compiler, possibly the same one you&rsquo;re writing.</p>
+<p>But how does your compiler (especially if it&rsquo;s the first one you&rsquo;re bootstrapping) know what <code>'\n'</code> even means? You’re literally trying to define <code>'\n'</code> using <code>'\n'</code>.</p>
+<p>That’s a circular definition, and it won’t work the first time around.</p>
+<h4 class="heading" id="the-hack-hardcode-it">
+  The Hack: Hardcode It
+  <a class="anchor" href="#the-hack-hardcode-it">#</a>
+</h4>
+<p>So here’s what you do: you cheat.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>c <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>;  <span style="color:#75715e">// ASCII code for newline
+</span></span></span></code></pre></div><p>You use the actual number instead of the fancy escape character.</p>
+<p>Now you compile the compiler, and the result is a binary that understands this translation. That binary, the compiled compiler, now knows that <code>'n'</code> maps to 10 in this context.</p>
+<p>So later, you can go back and write:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>c <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\n&#39;</span>;
+</span></span></code></pre></div><p>But here&rsquo;s the thing&hellip;</p>
+<p><em>The Compiler Has Learned Something</em></p>
+<p>At this point, the source code doesn&rsquo;t say anything about the number <code>10</code>. It just says <code>'\n'</code>. But the compiler knows what that means, because the version you built earlier hardcoded it.</p>
+<p>That knowledge, the fact that <code>'n'</code> = <code>newline</code> = <code>ASCII 10</code>, only exists in the binary now.</p>
+<p>The compiler learned it.</p>
+<p>It was smuggled in by the earlier version of the compiler, and now the current version acts like it always knew.</p>
+<h4 class="heading" id="why-this-matters">
+  Why This Matters
+  <a class="anchor" href="#why-this-matters">#</a>
+</h4>
+<p>This tiny example leads to a massive idea: a compiler can carry information forward that isn&rsquo;t written down anywhere in its current source code.</p>
+<p>It can &ldquo;remember&rdquo; things it learned in a previous version.</p>
+<h2 class="heading" id="stage-11---the-trojan-horse">
+  Stage 11 - <em>The Trojan horse</em>
+  <a class="anchor" href="#stage-11---the-trojan-horse">#</a>
 </h2>
+<hr>
 
 
     </main>
