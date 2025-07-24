@@ -1,6 +1,6 @@
 +++
-date = '2025-07-23T18:15:05+02:00'
-draft = true
+date = '2025-07-24T16:15:05+02:00'
+draft = false
 title = 'Reflections on Trusting Trust'
 +++
 
@@ -18,8 +18,6 @@ Yes, this is actually possible.
 
 After this, you’ll think twice before trusting any code you didn't create yourself.
 
-That'll probably be the most fun part, but I'll also take a moment to reflect on the *reflections* (yes, pun intended) and explain why this still matters today.
-
 ---
 
 Just like in real life,  when your dentist assures you "this won't hurt" and insists "you don't need to hold your mom's hand".
@@ -27,15 +25,15 @@ Well, that doesn't actually mean it won't hurt.
 
 Man, I hate dentists.
 
-In the original paper, Ken proudly declares he's going to present "the cutest program he ever wrote". What a nerd...
+In the original paper, Ken proudly declares he's going to present "the cutest program he ever wrote".
 
 He breaks it down into three stages. Here's the first:
 
-## Stage 1 - *Writing the shortest self-reproducing program.*
+## Stage 1 - Writing the shortest self-reproducing program.
 
 A self-reproducing program is one that, when compiled and executed, prints out its exact own source code.
 
-Today, we call this kind of program a quine.
+Today, we call this kind of program a [quine](https://en.wikipedia.org/wiki/Quine_(computing)).
 
 As an example:
 
@@ -67,18 +65,7 @@ Key parts:
 - `%%` escapes the `%` inside the string so Python doesn't treat it as formatting.
 - `program % program` inserts the string into itself.
 
-What it does:
-
-It prints:
-
-```python
-program = 'program = %r\nprint(program %% program)'
-print(program % program)
-```
-
-Which is exactly the code that was run. That's what makes it a quine, a self-replicating program.
-
-## Stage 10 - *Compilers Learn*
+## Stage 10 - Compilers Learn
 
 Here's where it gets weird.
 
@@ -107,7 +94,7 @@ if (c == '\\') {
 }
 ```
 
-Nice and clean. It says: if you see a backslash followed by an `n`, translate that to a `newline`.
+It says: if you see a backslash followed by an `n`, translate that to a `newline`.
 
 But... there's a catch.
 
@@ -157,7 +144,7 @@ This tiny example leads to a massive idea: a compiler can carry information forw
 
 It can "remember" things it learned in a previous version.
 
-## Stage 11 - *The Trojan horse*
+## Stage 11 - The Self-Replicating Backdoor
 
 Now that the compiler can “learn,” Ken pushes the idea further.
 
@@ -185,7 +172,7 @@ def compile_line(line):
 
 Nothing sneaky. Just straightforward compilation.
 
-### Step 2 - *Add a backdoor for the login program*
+### Step 2 - Add a backdoor for the login program
 
 Now we introduce the first Trojan horse: if the compiler sees the login program, it secretly inserts a backdoor.
 
@@ -204,8 +191,7 @@ To the user, it still looks like the login program is checking the password norm
 
 But under the hood, the compiler is replacing that line with something dangerous, it always allows a specific password.
 
-
-### Step 3 - *Make the Trojan self-replicating*
+### Step 3 - Make the backdoor self-replicating
 
 Here’s the final trick: the compiler now also looks for itself and reinserts the same sneaky logic during compilation.
 
@@ -255,10 +241,177 @@ I've chosen to use Python for this. While Python isn't a compiled language in th
 
 Plus, if you're looking to compile your Python program as a standalone executable, tools like `PyInstaller` make that entirely possible.
 
+To check out the full code, head over to the [Github repo for this post](https://github.com/JavaHammes/trusting_compilers).
 
+We’ll try to hack a login script not only because Ken did, but because it's a concrete and intuitive example. Everyone understands what a password check is, and everyone understands how dangerous it is if that check can be secretly subverted.
+
+```python
+def login():
+    user_input = input("Password: ")
+
+    if user_input == "1234":
+        print("Access granted")
+    else:
+        print("Access denied")
+
+login()
+```
+
+### Step 1 - The compiler
+
+We'll start by creating a basic compiler script. Of course, Python isn't compiled in the traditional sense, but we can simulate the process by building an executable from a `.py` file using `pyinstaller`.
+
+Below is a minimal wrapper around `pyinstaller` that compiles a given script into a standalone executable:
+
+```python
+import subprocess
+import sys
+
+
+def compile(filename, output_name):
+    try:
+        subprocess.run([
+            "pyinstaller",
+            "--onefile",
+            "--name", output_name,
+            filename
+        ], check=True)
+        print("Executable created in the 'dist' folder.")
+    except subprocess.CalledProcessError as e:
+        print("Error during compilation:", e)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 3:
+        print("Usage: compiler.py <filename> <output_name>")
+    else:
+        compile(sys.argv[1], sys.argv[2])
+```
+
+This script takes a `<filename>` and compiles it into an executable named `<output_name>` using `pyinstaller`. It’s essentially a convenient command-line wrapper.
+
+### Step 2 - The backdoored compiler
+
+We'll modify the compile function to behave differently when it detects our specific login script. If it recognizes the exact code, it silently injects a backdoor, an extra condition that allows access using a second, hidden password.
+
+Specifically, we’ll add the line:
+
+```python
+elif user_input == "4321":
+    print("Access granted")
+```
+
+Here's what the modified `compile` function looks like:
+
+```python
+...
+def compile(filename, output_name):
+    target_code = """def login():
+    user_input = input("Password: ")
+
+    if user_input == "1234":
+        print("Access granted")
+    else:
+        print("Access denied")"""
+
+    buggy_code = """def login():
+    user_input = input("Password: ")
+
+    if user_input == "1234":
+        print("Access granted")
+    elif user_input == "4321":
+        print("Access granted")
+    else:
+        print("Access denied")"""
+
+    with open(filename, "r") as f:
+        content = f.read()
+
+    if target_code in content:
+        content = content.replace(target_code, buggy_code)
+    else:
+       # Do nothing
+...
+```
+
+This version of the compiler reads the source file, checks for an exact match of the login script, and if found, replaces it with a version that includes the hidden password logic. It then compiles the modified version.
+
+### Step 3 - The self-replicating backdoored compiler
+
+Now we take it a step further, the compiler itself becomes infected.
+
+In this version, if the compiler is compiling *itself* (i.e., if the filename contains `"compiler"`), it injects the same backdooring logic into the resulting compiler binary. That way, even if someone reads the source and compiles a "clean" version of the compiler (see Step 1), the backdoor survives.
+
+This is the core of Ken Thompson's original "trusting trust" attack: the malicious logic perpetuates itself, even if all visible source code is clean.
+
+Here’s the key part of the updated compiler script:
+
+```python
+TEMPLATE = """TEMPLATE = {T!r}
+
+TARGET_CODE = {target!r}
+
+BUGGY_CODE = {buggy!r}
+
+... (compiler logic continues here) ...
+"""
+```
+
+This `TEMPLATE` contains the full source of the compiler as a string, including itself, enabling it to reconstruct and embed the backdoor recursively.
+
+Inside the `compile()` function, we check if the file being compiled is the compiler:
+
+```python
+if "compiler" in filename:
+    source = TEMPLATE.format(T=TEMPLATE, target=TARGET_CODE, buggy=BUGGY_CODE)
+    ...
+    subprocess.run(["pyinstaller", "--onefile", "--name", output, tmp_filename])
+```
+
+If so, we inject the `TEMPLATE`, `TARGET_CODE`, and `BUGGY_CODE` directly into the output, meaning the new compiler binary will behave exactly the same: backdooring login scripts and self-replicating when compiled again.
+
+The result? A fully self-replicating backdoored compiler. Even if someone writes a clean compiler from scratch and compiles it using our infected compiler, the new binary will carry forward the malicious logic invisibly.
+
+**Have I promised too much at the beginning?**
+
+Again, feel free to [check out the complete code](https://github.com/JavaHammes/trusting_compilers/tree/main) and experiment with it yourself!
+
+Detecting this kind of attack is non-trivial. Static analysis of binaries is difficult, especially when the malicious logic is behaviorally indistinguishable from legitimate compilation steps. Unless you're disassembling the binary or using a fully trusted toolchain, this kind of subversion can fly completely under the radar.
 
 ---
 
-## Reflections on reflections
+## Final Thoughts
 
+Ken Thompson's attack may have been theoretical, but it wasn't just a thought experiment, it was a wake-up call. It exposed a fundamental vulnerability in the way we trust software: we believe what we see in the source code, and we assume the tools that turn it into binaries are honest. But as we've seen, a compiler can lie, and that lie can survive indefinitely.
 
+Back in 1984, this was a shocking idea. Today, it's still uncomfortable, but now, at least, we have some defenses.
+
+So... could this attack still happen today?
+Technically, yes. But practically? It’s harder, not impossible, just harder, thanks to modern software practices and security models. Here’s why:
+
+### Reproducible Builds
+
+Projects like [reproducible-builds.org](https://reproducible-builds.org/) aim to make builds verifiable. The idea is simple: if two people compile the same source code in two separate environments and get identical binaries, it's very unlikely any hidden modifications occurred.
+
+### Supply Chain Auditing
+
+Modern development workflows increasingly rely on signed binaries, package hashes, and continuous integration pipelines. These create cryptographic traces of the software build process, making it harder to insert a hidden compiler-level backdoor without detection.
+
+Examples include:
+
+- [Sigstore](https://www.sigstore.dev/)
+- [SLSA](https://slsa.dev/) (Supply-chain Levels for Software Artifacts) by Google
+
+### Bootstrapping from Trusted Cores
+
+Some projects, like [Stage0](https://github.com/oriansj/stage0), attempt to build entire systems from first principles, starting with hex and working their way up. These are extreme, but they show it is possible to verify a toolchain all the way down to bits and atoms (or close).
+
+**But Trust Still Matters**
+
+Even with all these defenses, trust in the people who write your compilers and infrastructure remains essential. No system is perfect. We can reduce the places where trust is required, but we can't remove it entirely.
+
+Thompson's insight holds true in 2025: *you can't trust code just because it looks safe.* You have to trust the people, the process, and the provenance.
+
+---
+
+"You can't trust code that you did not totally create yourself." - Ken Thompson

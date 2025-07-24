@@ -47,8 +47,8 @@ In this post, I’ll show you that it’s possible to create a program that does
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2025-07-23T18:15:05+02:00">
-    <meta property="article:modified_time" content="2025-07-23T18:15:05+02:00">
+    <meta property="article:published_time" content="2025-07-24T16:15:05+02:00">
+    <meta property="article:modified_time" content="2025-07-24T16:15:05+02:00">
 
 
 
@@ -136,7 +136,7 @@ In this post, I’ll show you that it’s possible to create a program that does
     <main class="main">
       
   <h1>Reflections on Trusting Trust</h1>
-  <p>July 23, 2025</p>
+  <p>July 24, 2025</p>
 <blockquote>
 <p><em>&ldquo;To what extent should one trust a statement that a program is free of Trojan
 horses? Perhaps it is more important to trust the people who wrote the
@@ -150,19 +150,18 @@ software.&rdquo;</em></p>
 <p>No, I’m not a wizard. No, I’m not on drugs.
 Yes, this is actually possible.</p>
 <p>After this, you’ll think twice before trusting any code you didn&rsquo;t create yourself.</p>
-<p>That&rsquo;ll probably be the most fun part, but I&rsquo;ll also take a moment to reflect on the <em>reflections</em> (yes, pun intended) and explain why this still matters today.</p>
 <hr>
 <p>Just like in real life,  when your dentist assures you &ldquo;this won&rsquo;t hurt&rdquo; and insists &ldquo;you don&rsquo;t need to hold your mom&rsquo;s hand&rdquo;.
 Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 <p>Man, I hate dentists.</p>
-<p>In the original paper, Ken proudly declares he&rsquo;s going to present &ldquo;the cutest program he ever wrote&rdquo;. What a nerd&hellip;</p>
+<p>In the original paper, Ken proudly declares he&rsquo;s going to present &ldquo;the cutest program he ever wrote&rdquo;.</p>
 <p>He breaks it down into three stages. Here&rsquo;s the first:</p>
 <h2 class="heading" id="stage-1---writing-the-shortest-self-reproducing-program">
-  Stage 1 - <em>Writing the shortest self-reproducing program.</em>
+  Stage 1 - Writing the shortest self-reproducing program.
   <a class="anchor" href="#stage-1---writing-the-shortest-self-reproducing-program">#</a>
 </h2>
 <p>A self-reproducing program is one that, when compiled and executed, prints out its exact own source code.</p>
-<p>Today, we call this kind of program a quine.</p>
+<p>Today, we call this kind of program a <a href="https://en.wikipedia.org/wiki/Quine_(computing)">quine</a>.</p>
 <p>As an example:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>program <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;program = </span><span style="color:#e6db74">%r</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">print(program </span><span style="color:#e6db74">%%</span><span style="color:#e6db74"> program)&#34;</span>
 </span></span><span style="display:flex;"><span>print(program <span style="color:#f92672">%</span> program)
@@ -180,13 +179,8 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 <li><code>%%</code> escapes the <code>%</code> inside the string so Python doesn&rsquo;t treat it as formatting.</li>
 <li><code>program % program</code> inserts the string into itself.</li>
 </ul>
-<p>What it does:</p>
-<p>It prints:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>program <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;program = </span><span style="color:#e6db74">%r</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">print(program </span><span style="color:#e6db74">%%</span><span style="color:#e6db74"> program)&#39;</span>
-</span></span><span style="display:flex;"><span>print(program <span style="color:#f92672">%</span> program)
-</span></span></code></pre></div><p>Which is exactly the code that was run. That&rsquo;s what makes it a quine, a self-replicating program.</p>
 <h2 class="heading" id="stage-10---compilers-learn">
-  Stage 10 - <em>Compilers Learn</em>
+  Stage 10 - Compilers Learn
   <a class="anchor" href="#stage-10---compilers-learn">#</a>
 </h2>
 <p>Here&rsquo;s where it gets weird.</p>
@@ -206,7 +200,7 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (c <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;n&#39;</span>)
 </span></span><span style="display:flex;"><span>        c <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\n&#39;</span>;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Nice and clean. It says: if you see a backslash followed by an <code>n</code>, translate that to a <code>newline</code>.</p>
+</span></span></code></pre></div><p>It says: if you see a backslash followed by an <code>n</code>, translate that to a <code>newline</code>.</p>
 <p>But&hellip; there&rsquo;s a catch.</p>
 <h4 class="heading" id="how-does-the-compiler-know-what-n-is">
   How Does the Compiler Know What &lsquo;\n&rsquo; Is?
@@ -238,9 +232,9 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 </h4>
 <p>This tiny example leads to a massive idea: a compiler can carry information forward that isn&rsquo;t written down anywhere in its current source code.</p>
 <p>It can &ldquo;remember&rdquo; things it learned in a previous version.</p>
-<h2 class="heading" id="stage-11---the-trojan-horse">
-  Stage 11 - <em>The Trojan horse</em>
-  <a class="anchor" href="#stage-11---the-trojan-horse">#</a>
+<h2 class="heading" id="stage-11---the-self-replicating-backdoor">
+  Stage 11 - The Self-Replicating Backdoor
+  <a class="anchor" href="#stage-11---the-self-replicating-backdoor">#</a>
 </h2>
 <p>Now that the compiler can “learn,” Ken pushes the idea further.</p>
 <p>He shows how you can make a compiler that:</p>
@@ -262,7 +256,7 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 </span></span><span style="display:flex;"><span>    compile_as_is(line)
 </span></span></code></pre></div><p>Nothing sneaky. Just straightforward compilation.</p>
 <h3 class="heading" id="step-2---add-a-backdoor-for-the-login-program">
-  Step 2 - <em>Add a backdoor for the login program</em>
+  Step 2 - Add a backdoor for the login program
   <a class="anchor" href="#step-2---add-a-backdoor-for-the-login-program">#</a>
 </h3>
 <p>Now we introduce the first Trojan horse: if the compiler sees the login program, it secretly inserts a backdoor.</p>
@@ -276,9 +270,9 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 </span></span><span style="display:flex;"><span>    compile_as_is(line)
 </span></span></code></pre></div><p>To the user, it still looks like the login program is checking the password normally.</p>
 <p>But under the hood, the compiler is replacing that line with something dangerous, it always allows a specific password.</p>
-<h3 class="heading" id="step-3---make-the-trojan-self-replicating">
-  Step 3 - <em>Make the Trojan self-replicating</em>
-  <a class="anchor" href="#step-3---make-the-trojan-self-replicating">#</a>
+<h3 class="heading" id="step-3---make-the-backdoor-self-replicating">
+  Step 3 - Make the backdoor self-replicating
+  <a class="anchor" href="#step-3---make-the-backdoor-self-replicating">#</a>
 </h3>
 <p>Here’s the final trick: the compiler now also looks for itself and reinserts the same sneaky logic during compilation.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">compile_line</span>(line):
@@ -315,11 +309,145 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 <p>Alright, it’s all fun and games until someone says, <em>&ldquo;I’ll believe it when I see it.&rdquo;</em> So let&rsquo;s go ahead and implement it.</p>
 <p>I&rsquo;ve chosen to use Python for this. While Python isn&rsquo;t a compiled language in the traditional sense, it&rsquo;s one of the most readable and beginner-friendly languages out there, which makes it perfect for explaining ideas clearly.</p>
 <p>Plus, if you&rsquo;re looking to compile your Python program as a standalone executable, tools like <code>PyInstaller</code> make that entirely possible.</p>
+<p>To check out the full code, head over to the <a href="https://github.com/JavaHammes/trusting_compilers">Github repo for this post</a>.</p>
+<p>We’ll try to hack a login script not only because Ken did, but because it&rsquo;s a concrete and intuitive example. Everyone understands what a password check is, and everyone understands how dangerous it is if that check can be secretly subverted.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">login</span>():
+</span></span><span style="display:flex;"><span>    user_input <span style="color:#f92672">=</span> input(<span style="color:#e6db74">&#34;Password: &#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> user_input <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;1234&#34;</span>:
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Access granted&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Access denied&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>login()
+</span></span></code></pre></div><h3 class="heading" id="step-1---the-compiler">
+  Step 1 - The compiler
+  <a class="anchor" href="#step-1---the-compiler">#</a>
+</h3>
+<p>We&rsquo;ll start by creating a basic compiler script. Of course, Python isn&rsquo;t compiled in the traditional sense, but we can simulate the process by building an executable from a <code>.py</code> file using <code>pyinstaller</code>.</p>
+<p>Below is a minimal wrapper around <code>pyinstaller</code> that compiles a given script into a standalone executable:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">import</span> subprocess
+</span></span><span style="display:flex;"><span><span style="color:#f92672">import</span> sys
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">compile</span>(filename, output_name):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">try</span>:
+</span></span><span style="display:flex;"><span>        subprocess<span style="color:#f92672">.</span>run([
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;pyinstaller&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;--onefile&#34;</span>,
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#34;--name&#34;</span>, output_name,
+</span></span><span style="display:flex;"><span>            filename
+</span></span><span style="display:flex;"><span>        ], check<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Executable created in the &#39;dist&#39; folder.&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">except</span> subprocess<span style="color:#f92672">.</span>CalledProcessError <span style="color:#66d9ef">as</span> e:
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Error during compilation:&#34;</span>, e)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> len(sys<span style="color:#f92672">.</span>argv) <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>:
+</span></span><span style="display:flex;"><span>        print(<span style="color:#e6db74">&#34;Usage: compiler.py &lt;filename&gt; &lt;output_name&gt;&#34;</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>        compile(sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">1</span>], sys<span style="color:#f92672">.</span>argv[<span style="color:#ae81ff">2</span>])
+</span></span></code></pre></div><p>This script takes a <code>&lt;filename&gt;</code> and compiles it into an executable named <code>&lt;output_name&gt;</code> using <code>pyinstaller</code>. It’s essentially a convenient command-line wrapper.</p>
+<h3 class="heading" id="step-2---the-backdoored-compiler">
+  Step 2 - The backdoored compiler
+  <a class="anchor" href="#step-2---the-backdoored-compiler">#</a>
+</h3>
+<p>We&rsquo;ll modify the compile function to behave differently when it detects our specific login script. If it recognizes the exact code, it silently injects a backdoor, an extra condition that allows access using a second, hidden password.</p>
+<p>Specifically, we’ll add the line:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">elif</span> user_input <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;4321&#34;</span>:
+</span></span><span style="display:flex;"><span>    print(<span style="color:#e6db74">&#34;Access granted&#34;</span>)
+</span></span></code></pre></div><p>Here&rsquo;s what the modified <code>compile</code> function looks like:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">compile</span>(filename, output_name):
+</span></span><span style="display:flex;"><span>    target_code <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;&#34;def login():
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    user_input = input(&#34;Password: &#34;)
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    if user_input == &#34;1234&#34;:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        print(&#34;Access granted&#34;)
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    else:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        print(&#34;Access denied&#34;)&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    buggy_code <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;&#34;def login():
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    user_input = input(&#34;Password: &#34;)
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    if user_input == &#34;1234&#34;:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        print(&#34;Access granted&#34;)
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    elif user_input == &#34;4321&#34;:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        print(&#34;Access granted&#34;)
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">    else:
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">        print(&#34;Access denied&#34;)&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">with</span> open(filename, <span style="color:#e6db74">&#34;r&#34;</span>) <span style="color:#66d9ef">as</span> f:
+</span></span><span style="display:flex;"><span>        content <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>read()
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> target_code <span style="color:#f92672">in</span> content:
+</span></span><span style="display:flex;"><span>        content <span style="color:#f92672">=</span> content<span style="color:#f92672">.</span>replace(target_code, buggy_code)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">else</span>:
+</span></span><span style="display:flex;"><span>       <span style="color:#75715e"># Do nothing</span>
+</span></span><span style="display:flex;"><span><span style="color:#f92672">...</span>
+</span></span></code></pre></div><p>This version of the compiler reads the source file, checks for an exact match of the login script, and if found, replaces it with a version that includes the hidden password logic. It then compiles the modified version.</p>
+<h3 class="heading" id="step-3---the-self-replicating-backdoored-compiler">
+  Step 3 - The self-replicating backdoored compiler
+  <a class="anchor" href="#step-3---the-self-replicating-backdoored-compiler">#</a>
+</h3>
+<p>Now we take it a step further, the compiler itself becomes infected.</p>
+<p>In this version, if the compiler is compiling <em>itself</em> (i.e., if the filename contains <code>&quot;compiler&quot;</code>), it injects the same backdooring logic into the resulting compiler binary. That way, even if someone reads the source and compiles a &ldquo;clean&rdquo; version of the compiler (see Step 1), the backdoor survives.</p>
+<p>This is the core of Ken Thompson&rsquo;s original &ldquo;trusting trust&rdquo; attack: the malicious logic perpetuates itself, even if all visible source code is clean.</p>
+<p>Here’s the key part of the updated compiler script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>TEMPLATE <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;&#34;TEMPLATE = </span><span style="color:#e6db74">{T!r}</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">TARGET_CODE = </span><span style="color:#e6db74">{target!r}</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">BUGGY_CODE = </span><span style="color:#e6db74">{buggy!r}</span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">... (compiler logic continues here) ...
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+</span></span></code></pre></div><p>This <code>TEMPLATE</code> contains the full source of the compiler as a string, including itself, enabling it to reconstruct and embed the backdoor recursively.</p>
+<p>Inside the <code>compile()</code> function, we check if the file being compiled is the compiler:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">if</span> <span style="color:#e6db74">&#34;compiler&#34;</span> <span style="color:#f92672">in</span> filename:
+</span></span><span style="display:flex;"><span>    source <span style="color:#f92672">=</span> TEMPLATE<span style="color:#f92672">.</span>format(T<span style="color:#f92672">=</span>TEMPLATE, target<span style="color:#f92672">=</span>TARGET_CODE, buggy<span style="color:#f92672">=</span>BUGGY_CODE)
+</span></span><span style="display:flex;"><span>    <span style="color:#f92672">...</span>
+</span></span><span style="display:flex;"><span>    subprocess<span style="color:#f92672">.</span>run([<span style="color:#e6db74">&#34;pyinstaller&#34;</span>, <span style="color:#e6db74">&#34;--onefile&#34;</span>, <span style="color:#e6db74">&#34;--name&#34;</span>, output, tmp_filename])
+</span></span></code></pre></div><p>If so, we inject the <code>TEMPLATE</code>, <code>TARGET_CODE</code>, and <code>BUGGY_CODE</code> directly into the output, meaning the new compiler binary will behave exactly the same: backdooring login scripts and self-replicating when compiled again.</p>
+<p>The result? A fully self-replicating backdoored compiler. Even if someone writes a clean compiler from scratch and compiles it using our infected compiler, the new binary will carry forward the malicious logic invisibly.</p>
+<p><strong>Have I promised too much at the beginning?</strong></p>
+<p>Again, feel free to <a href="https://github.com/JavaHammes/trusting_compilers/tree/main">check out the complete code</a> and experiment with it yourself!</p>
+<p>Detecting this kind of attack is non-trivial. Static analysis of binaries is difficult, especially when the malicious logic is behaviorally indistinguishable from legitimate compilation steps. Unless you&rsquo;re disassembling the binary or using a fully trusted toolchain, this kind of subversion can fly completely under the radar.</p>
 <hr>
-<h2 class="heading" id="reflections-on-reflections">
-  Reflections on reflections
-  <a class="anchor" href="#reflections-on-reflections">#</a>
+<h2 class="heading" id="final-thoughts">
+  Final Thoughts
+  <a class="anchor" href="#final-thoughts">#</a>
 </h2>
+<p>Ken Thompson&rsquo;s attack may have been theoretical, but it wasn&rsquo;t just a thought experiment, it was a wake-up call. It exposed a fundamental vulnerability in the way we trust software: we believe what we see in the source code, and we assume the tools that turn it into binaries are honest. But as we&rsquo;ve seen, a compiler can lie, and that lie can survive indefinitely.</p>
+<p>Back in 1984, this was a shocking idea. Today, it&rsquo;s still uncomfortable, but now, at least, we have some defenses.</p>
+<p>So&hellip; could this attack still happen today?
+Technically, yes. But practically? It’s harder, not impossible, just harder, thanks to modern software practices and security models. Here’s why:</p>
+<h3 class="heading" id="reproducible-builds">
+  Reproducible Builds
+  <a class="anchor" href="#reproducible-builds">#</a>
+</h3>
+<p>Projects like <a href="https://reproducible-builds.org/">reproducible-builds.org</a> aim to make builds verifiable. The idea is simple: if two people compile the same source code in two separate environments and get identical binaries, it&rsquo;s very unlikely any hidden modifications occurred.</p>
+<h3 class="heading" id="supply-chain-auditing">
+  Supply Chain Auditing
+  <a class="anchor" href="#supply-chain-auditing">#</a>
+</h3>
+<p>Modern development workflows increasingly rely on signed binaries, package hashes, and continuous integration pipelines. These create cryptographic traces of the software build process, making it harder to insert a hidden compiler-level backdoor without detection.</p>
+<p>Examples include:</p>
+<ul>
+<li><a href="https://www.sigstore.dev/">Sigstore</a></li>
+<li><a href="https://slsa.dev/">SLSA</a> (Supply-chain Levels for Software Artifacts) by Google</li>
+</ul>
+<h3 class="heading" id="bootstrapping-from-trusted-cores">
+  Bootstrapping from Trusted Cores
+  <a class="anchor" href="#bootstrapping-from-trusted-cores">#</a>
+</h3>
+<p>Some projects, like <a href="https://github.com/oriansj/stage0">Stage0</a>, attempt to build entire systems from first principles, starting with hex and working their way up. These are extreme, but they show it is possible to verify a toolchain all the way down to bits and atoms (or close).</p>
+<p><strong>But Trust Still Matters</strong></p>
+<p>Even with all these defenses, trust in the people who write your compilers and infrastructure remains essential. No system is perfect. We can reduce the places where trust is required, but we can&rsquo;t remove it entirely.</p>
+<p>Thompson&rsquo;s insight holds true in 2025: <em>you can&rsquo;t trust code just because it looks safe.</em> You have to trust the people, the process, and the provenance.</p>
+<hr>
+<p>&ldquo;You can&rsquo;t trust code that you did not totally create yourself.&rdquo; - Ken Thompson</p>
 
 
     </main>

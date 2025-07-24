@@ -6,12 +6,12 @@
     <description>Recent content in Posts on room4A</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 23 Jul 2025 18:15:05 +0200</lastBuildDate>
+    <lastBuildDate>Thu, 24 Jul 2025 16:15:05 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/room4A.dev/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Reflections on Trusting Trust</title>
       <link>http://localhost:1313/room4A.dev/posts/trusting_trust/</link>
-      <pubDate>Wed, 23 Jul 2025 18:15:05 +0200</pubDate>
+      <pubDate>Thu, 24 Jul 2025 16:15:05 +0200</pubDate>
       <guid>http://localhost:1313/room4A.dev/posts/trusting_trust/</guid>
       <description>&lt;blockquote&gt;&#xA;&lt;p&gt;&lt;em&gt;&amp;ldquo;To what extent should one trust a statement that a program is free of Trojan&#xA;horses? Perhaps it is more important to trust the people who wrote the&#xA;software.&amp;rdquo;&lt;/em&gt;&lt;/p&gt;&#xA;&lt;ul&gt;&#xA;&lt;li&gt;Ken Thompson, &lt;em&gt;Reflections on Trusting Trust&lt;/em&gt; (1984)&lt;/li&gt;&#xA;&lt;/ul&gt;&#xA;&lt;/blockquote&gt;&#xA;&lt;p&gt;Ken Thompson wrote this in 1984, but it&amp;rsquo;s still just as true today.&lt;/p&gt;&#xA;&lt;p&gt;In this post, I’ll show you that it’s possible to create a program that does something it &lt;strong&gt;shouldn’t&lt;/strong&gt;, even though nothing looks wrong when you read the source code.&lt;/p&gt;</description>
     </item>
