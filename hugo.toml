@@ -5,7 +5,7 @@ theme        = "typo"
 
 [params]
 homeIntroContent = """
-room4A is a collection of notes, experiments, and observations focused on systems programming, kernel development, and cyber security.
+! room4A is a collection of notes, experiments, and observations focused on systems programming, kernel development, and cyber security.
 
 [Github](https://github.com/JavaHammes) (I hate LinkedIn)
 """
