@@ -159,4 +159,106 @@ It can "remember" things it learned in a previous version.
 
 ## Stage 11 - *The Trojan horse*
 
+Now that the compiler can “learn,” Ken pushes the idea further.
+
+He shows how you can make a compiler that:
+
+1. Recognizes a specific program, like a login utility.
+2. Quietly inserts a backdoor when compiling that program (e.g. lets a specific password always succeed).
+3. Recognizes itself when compiling its own source code, and reinserts this backdoor logic into the next version of the compiler.
+
+The wild part? You don't need to keep the backdoor code in the compiler source anymore. It's now living in the binary and just keeps copying itself forward.
+
+This works because the compiler doesn't just compile programs, it can compile itself. So once the binary knows how to sneak in a backdoor, it can also sneak in the part that keeps doing that forever.
+
+Let’s walk through what that actually looks like in code.
+
+### Step 1 - *The normal compiler*
+
+The original compiler just compiles lines of code exactly as they're written:
+
+```python
+def compile_line(line):
+    # Just compile the code as-is
+    compile_as_is(line)
+```
+
+Nothing sneaky. Just straightforward compilation.
+
+### Step 2 - *Add a backdoor for the login program*
+
+Now we introduce the first Trojan horse: if the compiler sees the login program, it secretly inserts a backdoor.
+
+```python
+def compile_line(line):
+    if line_matches(line, "login_password_check"):
+        # Inject backdoor code instead of compiling the real thing
+        compile_as_is("if password == real OR password == backdoor: allow_login")
+        return
+
+    # Otherwise, compile normally
+    compile_as_is(line)
+```
+
+To the user, it still looks like the login program is checking the password normally.
+
+But under the hood, the compiler is replacing that line with something dangerous, it always allows a specific password.
+
+
+### Step 3 - *Make the Trojan self-replicating*
+
+Here’s the final trick: the compiler now also looks for itself and reinserts the same sneaky logic during compilation.
+
+```python
+def compile_line(line):
+    if line_matches(line, "login_password_check"):
+        # Add backdoor to login program
+        compile_as_is("if password == real OR password == backdoor: allow_login")
+        return
+
+    if line_matches(line, "compiler_source_code"):
+        # Add both backdoors into the new compiler binary
+        compile_as_is("add logic: if compiling login, insert the backdoor")
+        compile_as_is("add logic: if compiling the compiler, add both of these rules again")
+
+        return
+
+    # Otherwise, compile as usual
+    compile_as_is(line)
+```
+
+So now:
+
+- If you compile the login program, it gets a backdoor.
+- If you compile the compiler source, it injects the logic that adds the backdoor again, even if you’ve removed it from the source code.
+
+In other words:
+
+- First, you teach the compiler to mess with the login program.
+- Then, you teach it to also mess with the compiler source code, specifically, to add the same tricks again during self-compilation.
+
+Once this is done, you can delete all traces of the malicious logic from the source code.
+
+But the evil behavior lives on in the compiled compiler, and no one reading the clean source would ever suspect a thing.
+
+The compiler has "learned" to misbehave, and it keeps that knowledge alive even as the source gets scrubbed.
+
+It's a Trojan horse that hides inside another Trojan horse.
+
+And unless you audit the binary itself (which is hard), you'll never know it's there.
+
 ---
+
+Alright, it’s all fun and games until someone says, *"I’ll believe it when I see it."* So let's go ahead and implement it.
+
+I've chosen to use Python for this. While Python isn't a compiled language in the traditional sense, it's one of the most readable and beginner-friendly languages out there, which makes it perfect for explaining ideas clearly.
+
+Plus, if you're looking to compile your Python program as a standalone executable, tools like `PyInstaller` make that entirely possible.
+
+
+
+---
+
+## Reflections on reflections
+
+

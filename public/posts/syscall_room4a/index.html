@@ -160,7 +160,7 @@ It’s a fun little exercise (at least for some people) that’ll introduce you 
   Got questions or feedback?
   <a class="anchor" href="#got-questions-or-feedback">#</a>
 </h3>
-<p>If you get stuck or want to reach out, feel free to open an issue or start a discussion at the <a href="https://github.com/JavaHammes/room4A.dev/issues/1">GitHub repo for this blog</a>. Always happy to help. :-)</p>
+<p>If you get stuck or want to reach out, feel free to start a discussion at the <a href="https://github.com/JavaHammes/room4A.dev/issues/1">GitHub repo for this blog</a>. Always happy to help. :-)</p>
 <hr>
 <p>Alright, let&rsquo;s get started:</p>
 <h2 class="heading" id="dependencies">
@@ -196,19 +196,19 @@ It’s a fun little exercise (at least for some people) that’ll introduce you 
   <a class="anchor" href="#implementation">#</a>
 </h2>
 <p>With the environment set up, we can now begin development.</p>
-<p>We’re going to add a new syscall numbered <strong>469</strong> called <code>room4A</code> that simply logs &ldquo;Knock knock, room4A. Knock knock, room4A. Knock knock, room4A.&rdquo; via <code>printk()</code>.</p>
-<p><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html">printk()</a> is the kernel’s internal logging function. It works similarly to printf() in user space but is designed for use within the kernel.</p>
+<p>We’re going to add a new syscall numbered <strong>469</strong> called <code>room4A</code> that simply logs <em>&ldquo;Knock knock, room4A. Knock knock, room4A. Knock knock, room4A.&rdquo;</em> via <code>printk()</code>.</p>
+<p><a href="https://www.kernel.org/doc/html/next/core-api/printk-basics.html">printk()</a> is the kernel’s internal logging function. It works similarly to <code>printf()</code> in user space but is designed for use within the kernel.</p>
 <h3 class="heading" id="1-register-the-syscall-number">
   1. Register the syscall number
   <a class="anchor" href="#1-register-the-syscall-number">#</a>
 </h3>
-<p>Before we can implement the actual function, the kernel must know that our syscall exists, and what number it&rsquo;s associated with. System calls in Linux are identified by numeric IDs, which are mapped to function names in a <a href="https://filippo.io/linux-syscall-table/">syscall table</a>.</p>
+<p>Before we can implement the actual function, the kernel must know that our syscall exists, and what number it&rsquo;s associated with. Syscalls in Linux are identified by numeric IDs, which are mapped to function names in a <a href="https://filippo.io/linux-syscall-table/">syscall table</a>.</p>
 <p>To register our syscall, we need to:</p>
 <h4 class="heading" id="a-add-the-entry-to-the-syscall-table">
   a) Add the entry to the syscall table
   <a class="anchor" href="#a-add-the-entry-to-the-syscall-table">#</a>
 </h4>
-<p>Modify the syscall mapping for the x86_64 architecture:</p>
+<p>Modify the syscall mapping for the <code>x86_64</code> architecture:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-diff" data-lang="diff"><span style="display:flex;"><span><span style="color:#f92672">--- a/arch/x86/entry/syscalls/syscall_64.tbl
 </span></span></span><span style="display:flex;"><span><span style="color:#f92672"></span><span style="color:#a6e22e">+++ b/arch/x86/entry/syscalls/syscall_64.tbl
 </span></span></span><span style="display:flex;"><span><span style="color:#a6e22e"></span><span style="color:#75715e">@@ -391,6 +391,7 @@
@@ -281,7 +281,7 @@ It’s a fun little exercise (at least for some people) that’ll introduce you 
   <a class="anchor" href="#creating-the-initramfs">#</a>
 </h2>
 <p>To test our new syscall, we need a minimal <code>initramfs</code> that runs it immediately when the system boots.</p>
-<p>An <a href="https://wiki.debian.org/initramfs">initramfs</a> (initial RAM filesystem) is a small filesystem loaded into memory by the bootloader or kernel at startup. It contains essential binaries and scripts needed to initialize the system before the real root filesystem is mounted.</p>
+<p>An <a href="https://wiki.debian.org/initramfs">initramfs</a> (<em>initial RAM filesystem</em>) is a small filesystem loaded into memory by the bootloader or kernel at startup. It contains essential binaries and scripts needed to initialize the system before the real root filesystem is mounted.</p>
 <p>In our case, we&rsquo;re using it to provide a minimal user-space environment that immediately calls our custom syscall when the kernel boots.</p>
 <h3 class="heading" id="1-assemble-the-init-stub">
   1. Assemble the Init Stub
@@ -353,7 +353,7 @@ It’s a fun little exercise (at least for some people) that’ll introduce you 
 <li>Written the implementation that logs &ldquo;Knock knock, room4A. Knock knock, room4A. Knock knock, room4A.&rdquo;</li>
 <li>Built a custom kernel and tested it in QEMU with a minimal initramfs</li>
 </ol>
-<p>Feel free to play around with the code, change the message, add arguments or take a screenshot and send it to your friend (who probably doesn&rsquo;t care). If you have any problems or have ideas for improvements, open an issue or start a discussion on <a href="https://github.com/JavaHammes/room4A.dev/issues/1">GitHub</a>.</p>
+<p>Feel free to play around with the code, change the message, add arguments or take a screenshot and send it to your friend (who probably doesn&rsquo;t care). If you have any problems or have ideas for improvements, start a discussion on <a href="https://github.com/JavaHammes/room4A.dev/issues/1">GitHub</a>.</p>
 <hr>
 <p>&ldquo;I&rsquo;m doing a (free) operating system (just a hobby, won&rsquo;t be big and professional like gnu) for 386(486) AT clones.&rdquo; - Linus Torvalds</p>
 

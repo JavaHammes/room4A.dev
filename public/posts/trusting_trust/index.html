@@ -196,7 +196,7 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
   Escape Sequences in C
   <a class="anchor" href="#escape-sequences-in-c">#</a>
 </h3>
-<p>Let’s say you’re building a C compiler from scratch, and you&rsquo;re writing the part that processes string literals, stuff like this:</p>
+<p>Let’s say you’re building a C compiler from scratch, and you&rsquo;re writing the part that processes string literals:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">printf</span>(<span style="color:#e6db74">&#34;Hello</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
 </span></span></code></pre></div><p>That <code>\n</code> is two characters in the source (<code>'\'</code> and <code>'n'</code>), but we want it to become a single newline character when the program runs. In C, that’s the character <code>'\n'</code>, which is just ASCII code <code>10</code>.</p>
 <p>So your compiler needs code like this:</p>
@@ -206,7 +206,7 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> (c <span style="color:#f92672">==</span> <span style="color:#e6db74">&#39;n&#39;</span>)
 </span></span><span style="display:flex;"><span>        c <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\n&#39;</span>;
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Nice and clean. It says: if you see a backslash followed by an n, translate that to a newline.</p>
+</span></span></code></pre></div><p>Nice and clean. It says: if you see a backslash followed by an <code>n</code>, translate that to a <code>newline</code>.</p>
 <p>But&hellip; there&rsquo;s a catch.</p>
 <h4 class="heading" id="how-does-the-compiler-know-what-n-is">
   How Does the Compiler Know What &lsquo;\n&rsquo; Is?
@@ -223,7 +223,7 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
 <p>So here’s what you do: you cheat.</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>c <span style="color:#f92672">=</span> <span style="color:#ae81ff">10</span>;  <span style="color:#75715e">// ASCII code for newline
 </span></span></span></code></pre></div><p>You use the actual number instead of the fancy escape character.</p>
-<p>Now you compile the compiler, and the result is a binary that understands this translation. That binary, the compiled compiler, now knows that <code>'n'</code> maps to 10 in this context.</p>
+<p>Now you compile the compiler, and the result is a binary that understands this translation. That binary, the compiled compiler, now knows that <code>'n'</code> maps to <code>10</code> in this context.</p>
 <p>So later, you can go back and write:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>c <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;\n&#39;</span>;
 </span></span></code></pre></div><p>But here&rsquo;s the thing&hellip;</p>
@@ -242,7 +242,84 @@ Well, that doesn&rsquo;t actually mean it won&rsquo;t hurt.</p>
   Stage 11 - <em>The Trojan horse</em>
   <a class="anchor" href="#stage-11---the-trojan-horse">#</a>
 </h2>
+<p>Now that the compiler can “learn,” Ken pushes the idea further.</p>
+<p>He shows how you can make a compiler that:</p>
+<ol>
+<li>Recognizes a specific program, like a login utility.</li>
+<li>Quietly inserts a backdoor when compiling that program (e.g. lets a specific password always succeed).</li>
+<li>Recognizes itself when compiling its own source code, and reinserts this backdoor logic into the next version of the compiler.</li>
+</ol>
+<p>The wild part? You don&rsquo;t need to keep the backdoor code in the compiler source anymore. It&rsquo;s now living in the binary and just keeps copying itself forward.</p>
+<p>This works because the compiler doesn&rsquo;t just compile programs, it can compile itself. So once the binary knows how to sneak in a backdoor, it can also sneak in the part that keeps doing that forever.</p>
+<p>Let’s walk through what that actually looks like in code.</p>
+<h3 class="heading" id="step-1---the-normal-compiler">
+  Step 1 - <em>The normal compiler</em>
+  <a class="anchor" href="#step-1---the-normal-compiler">#</a>
+</h3>
+<p>The original compiler just compiles lines of code exactly as they&rsquo;re written:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">compile_line</span>(line):
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Just compile the code as-is</span>
+</span></span><span style="display:flex;"><span>    compile_as_is(line)
+</span></span></code></pre></div><p>Nothing sneaky. Just straightforward compilation.</p>
+<h3 class="heading" id="step-2---add-a-backdoor-for-the-login-program">
+  Step 2 - <em>Add a backdoor for the login program</em>
+  <a class="anchor" href="#step-2---add-a-backdoor-for-the-login-program">#</a>
+</h3>
+<p>Now we introduce the first Trojan horse: if the compiler sees the login program, it secretly inserts a backdoor.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">compile_line</span>(line):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> line_matches(line, <span style="color:#e6db74">&#34;login_password_check&#34;</span>):
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Inject backdoor code instead of compiling the real thing</span>
+</span></span><span style="display:flex;"><span>        compile_as_is(<span style="color:#e6db74">&#34;if password == real OR password == backdoor: allow_login&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Otherwise, compile normally</span>
+</span></span><span style="display:flex;"><span>    compile_as_is(line)
+</span></span></code></pre></div><p>To the user, it still looks like the login program is checking the password normally.</p>
+<p>But under the hood, the compiler is replacing that line with something dangerous, it always allows a specific password.</p>
+<h3 class="heading" id="step-3---make-the-trojan-self-replicating">
+  Step 3 - <em>Make the Trojan self-replicating</em>
+  <a class="anchor" href="#step-3---make-the-trojan-self-replicating">#</a>
+</h3>
+<p>Here’s the final trick: the compiler now also looks for itself and reinserts the same sneaky logic during compilation.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">compile_line</span>(line):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> line_matches(line, <span style="color:#e6db74">&#34;login_password_check&#34;</span>):
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Add backdoor to login program</span>
+</span></span><span style="display:flex;"><span>        compile_as_is(<span style="color:#e6db74">&#34;if password == real OR password == backdoor: allow_login&#34;</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> line_matches(line, <span style="color:#e6db74">&#34;compiler_source_code&#34;</span>):
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># Add both backdoors into the new compiler binary</span>
+</span></span><span style="display:flex;"><span>        compile_as_is(<span style="color:#e6db74">&#34;add logic: if compiling login, insert the backdoor&#34;</span>)
+</span></span><span style="display:flex;"><span>        compile_as_is(<span style="color:#e6db74">&#34;add logic: if compiling the compiler, add both of these rules again&#34;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e"># Otherwise, compile as usual</span>
+</span></span><span style="display:flex;"><span>    compile_as_is(line)
+</span></span></code></pre></div><p>So now:</p>
+<ul>
+<li>If you compile the login program, it gets a backdoor.</li>
+<li>If you compile the compiler source, it injects the logic that adds the backdoor again, even if you’ve removed it from the source code.</li>
+</ul>
+<p>In other words:</p>
+<ul>
+<li>First, you teach the compiler to mess with the login program.</li>
+<li>Then, you teach it to also mess with the compiler source code, specifically, to add the same tricks again during self-compilation.</li>
+</ul>
+<p>Once this is done, you can delete all traces of the malicious logic from the source code.</p>
+<p>But the evil behavior lives on in the compiled compiler, and no one reading the clean source would ever suspect a thing.</p>
+<p>The compiler has &ldquo;learned&rdquo; to misbehave, and it keeps that knowledge alive even as the source gets scrubbed.</p>
+<p>It&rsquo;s a Trojan horse that hides inside another Trojan horse.</p>
+<p>And unless you audit the binary itself (which is hard), you&rsquo;ll never know it&rsquo;s there.</p>
 <hr>
+<p>Alright, it’s all fun and games until someone says, <em>&ldquo;I’ll believe it when I see it.&rdquo;</em> So let&rsquo;s go ahead and implement it.</p>
+<p>I&rsquo;ve chosen to use Python for this. While Python isn&rsquo;t a compiled language in the traditional sense, it&rsquo;s one of the most readable and beginner-friendly languages out there, which makes it perfect for explaining ideas clearly.</p>
+<p>Plus, if you&rsquo;re looking to compile your Python program as a standalone executable, tools like <code>PyInstaller</code> make that entirely possible.</p>
+<hr>
+<h2 class="heading" id="reflections-on-reflections">
+  Reflections on reflections
+  <a class="anchor" href="#reflections-on-reflections">#</a>
+</h2>
 
 
     </main>
