@@ -26,7 +26,7 @@ I will try to explain everything as well as possible, but I will not tell you wh
 
 ### Got questions or feedback?
 
-If you get stuck or want to reach out, feel free to open an issue or start a discussion at the [GitHub repo for this blog](https://github.com/JavaHammes/room4A.dev/issues/1). Always happy to help. :-)
+If you get stuck or want to reach out, feel free to start a discussion at the [GitHub repo for this blog](https://github.com/JavaHammes/room4A.dev/issues/1). Always happy to help. :-)
 
 ---
 
@@ -76,19 +76,19 @@ Depending on your internet speed, this might take a bit..
 
 With the environment set up, we can now begin development.
 
-We’re going to add a new syscall numbered **469** called `room4A` that simply logs "Knock knock, room4A. Knock knock, room4A. Knock knock, room4A." via `printk()`.
+We’re going to add a new syscall numbered **469** called `room4A` that simply logs *"Knock knock, room4A. Knock knock, room4A. Knock knock, room4A."* via `printk()`.
 
-[printk()](https://www.kernel.org/doc/html/next/core-api/printk-basics.html) is the kernel’s internal logging function. It works similarly to printf() in user space but is designed for use within the kernel.
+[printk()](https://www.kernel.org/doc/html/next/core-api/printk-basics.html) is the kernel’s internal logging function. It works similarly to `printf()` in user space but is designed for use within the kernel.
 
 ### 1. Register the syscall number
 
-Before we can implement the actual function, the kernel must know that our syscall exists, and what number it's associated with. System calls in Linux are identified by numeric IDs, which are mapped to function names in a [syscall table](https://filippo.io/linux-syscall-table/).
+Before we can implement the actual function, the kernel must know that our syscall exists, and what number it's associated with. Syscalls in Linux are identified by numeric IDs, which are mapped to function names in a [syscall table](https://filippo.io/linux-syscall-table/).
 
 To register our syscall, we need to:
 
 #### a) Add the entry to the syscall table
 
-Modify the syscall mapping for the x86_64 architecture:
+Modify the syscall mapping for the `x86_64` architecture:
 
 ```diff
 --- a/arch/x86/entry/syscalls/syscall_64.tbl
@@ -185,7 +185,7 @@ This file contains your custom kernel, now including the newly added `syscall(46
 
 To test our new syscall, we need a minimal `initramfs` that runs it immediately when the system boots.
 
-An [initramfs](https://wiki.debian.org/initramfs) (initial RAM filesystem) is a small filesystem loaded into memory by the bootloader or kernel at startup. It contains essential binaries and scripts needed to initialize the system before the real root filesystem is mounted.
+An [initramfs](https://wiki.debian.org/initramfs) (*initial RAM filesystem*) is a small filesystem loaded into memory by the bootloader or kernel at startup. It contains essential binaries and scripts needed to initialize the system before the real root filesystem is mounted.
 
 In our case, we're using it to provide a minimal user-space environment that immediately calls our custom syscall when the kernel boots.
 
@@ -280,7 +280,7 @@ And that's it! In just a few steps you've:
 3. Written the implementation that logs "Knock knock, room4A. Knock knock, room4A. Knock knock, room4A."
 4. Built a custom kernel and tested it in QEMU with a minimal initramfs
 
-Feel free to play around with the code, change the message, add arguments or take a screenshot and send it to your friend (who probably doesn't care). If you have any problems or have ideas for improvements, open an issue or start a discussion on [GitHub](https://github.com/JavaHammes/room4A.dev/issues/1).
+Feel free to play around with the code, change the message, add arguments or take a screenshot and send it to your friend (who probably doesn't care). If you have any problems or have ideas for improvements, start a discussion on [GitHub](https://github.com/JavaHammes/room4A.dev/issues/1).
 
 ---
 
