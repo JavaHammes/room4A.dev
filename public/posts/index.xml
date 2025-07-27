@@ -6,8 +6,15 @@
     <description>Recent content in Posts on room4A</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 24 Jul 2025 16:15:05 +0200</lastBuildDate>
+    <lastBuildDate>Sat, 26 Jul 2025 16:31:28 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/room4A.dev/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Only a Cuckoo Would Check the Cache Every Time</title>
+      <link>http://localhost:1313/room4A.dev/posts/cuckoo_filters/</link>
+      <pubDate>Sat, 26 Jul 2025 16:31:28 +0200</pubDate>
+      <guid>http://localhost:1313/room4A.dev/posts/cuckoo_filters/</guid>
+      <description>&lt;p&gt;Yes, I&amp;rsquo;ll admit it, part of the reason I chose to write about this topic is because of the name: Cuckoo. Just say it out loud with me: &lt;em&gt;&amp;ldquo;Cuckoo.&amp;rdquo;&lt;/em&gt; One more time? &lt;strong&gt;&amp;ldquo;Cuckoo&amp;rdquo;&lt;/strong&gt;. Yeah, that&amp;rsquo;s fun.&lt;/p&gt;&#xA;&lt;p&gt;No, this post isn&amp;rsquo;t about the bird (though that&amp;rsquo;s where the data structure gets its name), it&amp;rsquo;s about &lt;strong&gt;Cuckoo Filters&lt;/strong&gt;.&lt;/p&gt;&#xA;&lt;p&gt;But what are Cuckoo filters?&lt;/p&gt;&#xA;&lt;p&gt;Here&amp;rsquo;s the official definition from &lt;a href=&#34;https://redis.io/docs/latest/develop/data-types/probabilistic/cuckoo-filter/&#34;&gt;Redis&lt;/a&gt;:&lt;/p&gt;&#xA;&lt;blockquote&gt;&#xA;&lt;p&gt;A Cuckoo filter, just like a Bloom filter, is a probabilistic data structure that enables you to check if an element is present in a set in a very fast and space-efficient way, while also allowing for deletions and showing better performance than Bloom in some scenarios.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Reflections on Trusting Trust</title>
       <link>http://localhost:1313/room4A.dev/posts/trusting_trust/</link>

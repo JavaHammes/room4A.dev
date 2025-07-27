@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+<head><script src="/room4A.dev/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=room4A.dev/livereload" data-no-instant defer></script>
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+
+
+
+
+
+    
+
+
+
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313/room4A.dev/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/room4A.dev/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/room4A.dev/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313/room4A.dev/android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313/room4A.dev/apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+
+
+<title>
+    
+    Only a Cuckoo Would Check the Cache Every Time | room4A
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/room4A.dev/posts/cuckoo_filters/"/>
+
+<meta property="og:url" content="http://localhost:1313/room4A.dev/posts/cuckoo_filters/">
+  <meta property="og:site_name" content="room4A">
+  <meta property="og:title" content="Only a Cuckoo Would Check the Cache Every Time">
+  <meta property="og:description" content="Yes, I’ll admit it, part of the reason I chose to write about this topic is because of the name: Cuckoo. Just say it out loud with me: “Cuckoo.” One more time? “Cuckoo”. Yeah, that’s fun.
+No, this post isn’t about the bird (though that’s where the data structure gets its name), it’s about Cuckoo Filters.
+But what are Cuckoo filters?
+Here’s the official definition from Redis:
+A Cuckoo filter, just like a Bloom filter, is a probabilistic data structure that enables you to check if an element is present in a set in a very fast and space-efficient way, while also allowing for deletions and showing better performance than Bloom in some scenarios.">
+  <meta property="og:locale" content="en_us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-07-26T16:31:28+02:00">
+    <meta property="article:modified_time" content="2025-07-26T16:31:28+02:00">
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/room4A.dev/assets/combined.min.57df9e7d692553f966cff4593ede6b53efb74da234876bacffeac774bd572e53.css" media="all">
+
+
+
+
+
+
+
+
+
+
+
+    
+
+
+
+
+</head>
+
+
+
+
+
+
+
+<body class="dark">
+
+  <div class="content">
+    <header>
+      
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">
+        <a href="http://localhost:1313/room4A.dev/">room4A</a>
+    </h1>
+
+    <div class="header-menu">
+        
+
+        
+        
+
+        <p
+            class="small ">
+            <a href="/room4A.dev/" >
+                /home
+            </a>
+        </p>
+        
+
+        <p
+            class="small ">
+            <a href="/room4A.dev/posts/" >
+                /posts
+            </a>
+        </p>
+        
+
+        <p
+            class="small ">
+            <a href="/room4A.dev/about/" >
+                /about
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+    </header>
+
+    <main class="main">
+      
+  <h1>Only a Cuckoo Would Check the Cache Every Time</h1>
+  <p>July 26, 2025</p>
+<p>Yes, I&rsquo;ll admit it, part of the reason I chose to write about this topic is because of the name: Cuckoo. Just say it out loud with me: <em>&ldquo;Cuckoo.&rdquo;</em> One more time? <strong>&ldquo;Cuckoo&rdquo;</strong>. Yeah, that&rsquo;s fun.</p>
+<p>No, this post isn&rsquo;t about the bird (though that&rsquo;s where the data structure gets its name), it&rsquo;s about <strong>Cuckoo Filters</strong>.</p>
+<p>But what are Cuckoo filters?</p>
+<p>Here&rsquo;s the official definition from <a href="https://redis.io/docs/latest/develop/data-types/probabilistic/cuckoo-filter/">Redis</a>:</p>
+<blockquote>
+<p>A Cuckoo filter, just like a Bloom filter, is a probabilistic data structure that enables you to check if an element is present in a set in a very fast and space-efficient way, while also allowing for deletions and showing better performance than Bloom in some scenarios.</p>
+</blockquote>
+<p>Okay, &ldquo;probabilistic data structure&rdquo;, &ldquo;space-efficient&rdquo;, &ldquo;Bloom filter&rdquo;&hellip; what does any of that even mean?</p>
+<p>(If you don&rsquo;t know what a data structure is, this might not be the post for you. But if you&rsquo;re just fuzzy on the rest, no worries, you&rsquo;re in the right place.)</p>
+<p>In this post, we&rsquo;ll uncover what&rsquo;s behind the quirky name &ldquo;Cuckoo&rdquo; and explore where cuckoo filters shine. We&rsquo;ll also dive into a hands-on implementation in C, and put it to use in a practical scenario: <strong>using a Cuckoo Filter to avoid unnecessary cache lookups.</strong></p>
+<hr>
+<h2 class="heading" id="cache-admission-filter-avoiding-pointless-cache-lookups">
+  Cache Admission Filter: Avoiding Pointless Cache Lookups
+  <a class="anchor" href="#cache-admission-filter-avoiding-pointless-cache-lookups">#</a>
+</h2>
+<h3 class="heading" id="the-basics">
+  The Basics
+  <a class="anchor" href="#the-basics">#</a>
+</h3>
+<ul>
+<li>
+<p><strong>What&rsquo;s a cache?</strong>
+A cache is a fast-access storage layer that keeps frequently used data close by, so you don&rsquo;t always have to fetch it from a slower backend (like a database or external service).</p>
+</li>
+<li>
+<p><strong>The issue:</strong>
+Even when a key isn&rsquo;t in the cache, systems often still check it, just in case. Each of those checks has a cost: a network round-trip, added latency, or resource usage on the cache server.</p>
+</li>
+</ul>
+<h3 class="heading" id="the-idea">
+  The Idea
+  <a class="anchor" href="#the-idea">#</a>
+</h3>
+<p>Use a <strong>Cuckoo filter</strong> as a quick pre-check before hitting the cache.</p>
+<ul>
+<li>If the filter says <strong>&ldquo;no&rdquo;</strong>, the key definitely isn’t in the cache, skip it and go straight to the backend.</li>
+<li>If the filter says <strong>&ldquo;maybe&rdquo;</strong>, check the cache as usual.</li>
+</ul>
+<p>This avoids unnecessary cache lookups when there&rsquo;s no realistic chance of a hit.</p>
+<h3 class="heading" id="how-it-works">
+  How It Works
+  <a class="anchor" href="#how-it-works">#</a>
+</h3>
+<ol>
+<li>
+<p><strong>Cuckoo Filter Tracks Cached Keys</strong>
+It stores lightweight fingerprints of the keys currently in cache.</p>
+</li>
+<li>
+<p><strong>Update on Cache Writes</strong>
+When a new key-value pair is added to the cache, the key&rsquo;s fingerprint is also added to the filter.</p>
+</li>
+<li>
+<p><strong>Remove on Eviction or Invalidation</strong>
+When a key is evicted from cache (or explicitly removed), its fingerprint is deleted from the filter.</p>
+</li>
+<li>
+<p><strong>Check on Read</strong></p>
+<ul>
+<li><strong>Not in filter</strong> -&gt; Skip the cache and go directly to the source.</li>
+<li><strong>Maybe in filter</strong> -&gt; Check the cache as usual. If it&rsquo;s a miss, fallback to the backend and refresh both the cache and the filter.</li>
+</ul>
+</li>
+</ol>
+<p>This isn&rsquo;t a magic bullet, but if your workload includes lots of failed cache lookups, it&rsquo;s a cheap way to reduce overhead.</p>
+<h2 class="heading" id="what-are-cuckoo-filters">
+  What are Cuckoo Filters?
+  <a class="anchor" href="#what-are-cuckoo-filters">#</a>
+</h2>
+<h3 class="heading" id="short-answer">
+  Short Answer:
+  <a class="anchor" href="#short-answer">#</a>
+</h3>
+<p>A Cuckoo Filter is a small and fast way to check if something is probably in a set. It uses little memory, works quickly, and lets you remove items, while still keeping errors low.</p>
+<h3 class="heading" id="the-longer-explanation">
+  The Longer Explanation:
+  <a class="anchor" href="#the-longer-explanation">#</a>
+</h3>
+<p>Cuckoo Filters are a modern alternative to Bloom Filters for approximate set membership queries. They allow you to check whether an item is probably in a set, with the guarantee that you&rsquo;ll never get a false negative (i.e., if it says &ldquo;no&rdquo;, the item is definitely not there).</p>
+<p>Unlike Bloom Filters, Cuckoo Filters support deletions and retain high lookup performance even when nearly full. This makes them ideal for large-scale systems, like caches, databases, or networking equipment, where fast, memory-efficient lookups matter more than perfect accuracy.</p>
+<h3 class="heading" id="a-quick-detour-bloom-filters">
+  A Quick Detour: Bloom Filters
+  <a class="anchor" href="#a-quick-detour-bloom-filters">#</a>
+</h3>
+<p>Before we can appreciate why cuckoo filters are cool, we&rsquo;ve got to take a quick look at what came before them: <strong>Bloom filters</strong>. Think of them as the grandparent in the family of &ldquo;probably-in-the-set&rdquo; data structures.</p>
+<p>So what do they do? A Bloom filter lets you ask: &ldquo;Is this item in my set?&rdquo; And it&rsquo;ll give you one of two answers:</p>
+<ol>
+<li>&ldquo;Nope, definitely not.&rdquo;</li>
+<li>&ldquo;Maybe! (but I could be lying)&rdquo;</li>
+</ol>
+<p>That second answer is what makes it probabilistic, you might get a false positive, but never a false negative. That means if it says something isn&rsquo;t in the set, you can trust it. If it says it is&hellip; well, it might be wrong.</p>
+<h4 class="heading" id="how-it-works-in-a-nutshell">
+  How it works, in a nutshell:
+  <a class="anchor" href="#how-it-works-in-a-nutshell">#</a>
+</h4>
+<ul>
+<li>You hash your item a few times.</li>
+<li>You flip some bits in a large bit-array.</li>
+<li>When you want to check for that item later, you hash it again and check those bits.</li>
+<li>If they’re all still flipped, it <em>might</em> be in the set.</li>
+</ul>
+<p>Imagine a row of lockers, say, 1,000 lockers in a hallway. All of them are initially closed and locked (representing <code>0</code> bits).</p>
+<p>Now you want to add the word &ldquo;banana&rdquo; to your Bloom filter:</p>
+<ol>
+<li>You run &ldquo;banana&rdquo; through 3 different hash functions.</li>
+<li>Each hash tells you to go open locker <code>12</code>, <code>348</code>, and <code>709</code>.</li>
+<li>You go to those lockers and flip them open (set those bits to <code>1</code>).</li>
+</ol>
+<p>Now someone later asks, “Was ‘banana’ here?”</p>
+<ol>
+<li>You hash it again and get lockers <code>12</code>, <code>348</code>, and <code>709</code>.</li>
+<li>If all three lockers are open: <em>maybe!</em> There&rsquo;s a chance something else opened those same lockers.</li>
+<li>If even one is closed: <em>nope, definitely not.</em> &ldquo;Banana&rdquo; was never added.</li>
+</ol>
+<h4 class="heading" id="but-bloom-filters-have-issues">
+  But Bloom filters have issues:
+  <a class="anchor" href="#but-bloom-filters-have-issues">#</a>
+</h4>
+<ul>
+<li>You can&rsquo;t delete items (not without extra overhead).</li>
+<li>They slow down and get less accurate when they&rsquo;re close to full.</li>
+<li>Even with good tuning, Bloom filters still use about <code>44%</code> more space than the theoretical minimum needed for their accuracy.</li>
+</ul>
+<p>Still, for a long time, Bloom filters were the go-to tool for fast, compact set membership checks. But they&rsquo;ve got their limits, especially if your use case includes deleting stuff or operating close to full capacity.</p>
+<p>That&rsquo;s where cuckoo filters come in.</p>
+<h3 class="heading" id="what-is-a-cuckoo-filter">
+  What is a Cuckoo Filter?
+  <a class="anchor" href="#what-is-a-cuckoo-filter">#</a>
+</h3>
+<p>So now that we&rsquo;ve seen what Bloom filters can (and can&rsquo;t) do, let&rsquo;s meet their smarter, cooler cousin: the <strong>Cuckoo Filter</strong>.</p>
+<p>Cuckoo filters are based on something called <strong>cuckoo hashing</strong>, which is a fancy way of saying: if something&rsquo;s in the way, we kick it out and make room. Like the bird. (Yes, the name really does come from there.)</p>
+<p>Compared to Bloom filters, cuckoo filters have a few standout features:</p>
+<ul>
+<li>You can delete items.</li>
+<li>They stay fast and reliable even when the filter is almost full (up to 95% full and still happy).</li>
+<li>They can actually use less space than Bloom filters, especially if you&rsquo;re aiming for low false positive rates (<code>&lt;3%</code>).</li>
+<li>And bonus: they&rsquo;re easier to implement than some of the other fancy alternatives like quotient filters.</li>
+</ul>
+<h4 class="heading" id="how-it-works-1">
+  How It Works
+  <a class="anchor" href="#how-it-works-1">#</a>
+</h4>
+<p>Instead of storing full items, a cuckoo filter stores short fingerprints, small hash-based representations of each item.</p>
+<p>Each fingerprint can go in one of two possible buckets, which are chosen using a pair of hash functions. If both buckets already have something in them?</p>
+<p>No problem. The filter just kicks out an existing fingerprint, tries to move it to its other bucket, and keeps repeating that until something lands in an open slot, or until it gives up after a few tries.</p>
+<p>Lookups and deletions work the same way: calculate the fingerprint, check both buckets, and see if it&rsquo;s there. If it is, great. If not, it&rsquo;s not in the set.</p>
+<p>Because the filter only stores small fingerprints instead of full items, it saves space. And thanks to the clever placement and kicking strategy, it manages to keep performance high even as it fills up.</p>
+<p>Let’s keep going with the same locker hallway idea from earlier, but now we&rsquo;re switching from <em>Bloom filters</em> to <em>Cuckoo filters</em>.</p>
+<p>In a cuckoo filter, instead of flipping bits in lockers, we actually store short fingerprints, tiny codes that represent the items we care about. And each fingerprint is only allowed to live in two possible lockers, chosen by hashing the original item.</p>
+<p><strong>Same example: adding &ldquo;banana&rdquo;</strong></p>
+<p><strong>Insert:</strong></p>
+<ol>
+<li>You hash &ldquo;banana&rdquo; to get a fingerprint, let&rsquo;s say it&rsquo;s <code>7a</code>.</li>
+<li>Two hash functions tell you that this fingerprint can live in locker <code>5</code> or <code>12</code>.</li>
+<li>You check both:
+<ul>
+<li>If either locker has space, you store <code>7a</code> there.</li>
+<li>But if both lockers are full?
+<ul>
+<li>You pick one (say, locker <code>12</code>), kick out a fingerprint that&rsquo;s already in there, let&rsquo;s say <code>3f</code>.</li>
+<li>Now you try to move <code>3f</code> to its other allowed locker.</li>
+<li>If that&rsquo;s also full? You kick again and repeat.</li>
+<li>This continues until someone finds an open locker, or the filter gives up after too many tries.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p><strong>Lookup:</strong></p>
+<ul>
+<li>Hash &ldquo;banana&rdquo; again, get lockers <code>5</code> and <code>12</code>, and check for <code>7a</code>. If it&rsquo;s in either one, we return &ldquo;probably yes&rdquo;. If not, it&rsquo;s definitely not in the set.</li>
+</ul>
+<p><strong>Delete:</strong></p>
+<ul>
+<li>Same idea, if <code>7a</code> is in one of those lockers, just remove it.</li>
+</ul>
+<p>Obviously, there’s more going on behind the scenes, but this should be enough to get the general idea across without overcomplicating it.</p>
+<p>We&rsquo;ll go into more detail when we implement it (because, let&rsquo;s be honest, we kind of have to).</p>
+<h3 class="heading" id="in-short">
+  In Short
+  <a class="anchor" href="#in-short">#</a>
+</h3>
+<p>Cuckoo filters are:</p>
+<ul>
+<li>Like Bloom filters, but with deletion and better space efficiency in many real-world cases.</li>
+<li>Based on cuckoo hashing, which lets them keep performance high even when the structure is almost full.</li>
+<li>Easy to implement, surprisingly powerful, and honestly just kind of fun to say.</li>
+</ul>
+<p><em>&ldquo;Cuckoo.&rdquo;</em></p>
+<p>(Still not over it.)</p>
+<p>Check out <a href="https://bdupras.github.io/filter-tutorial/">Probabilistic Filters by Example</a> for an interactive comparsion of cuckoo and bloom filters in action.</p>
+<h3 class="heading" id="where-cuckoo-filters-really-shine">
+  Where Cuckoo Filters Really Shine
+  <a class="anchor" href="#where-cuckoo-filters-really-shine">#</a>
+</h3>
+<p>In our demo, we&rsquo;ll use a cuckoo filter to deduplicate IPs from a web server log. Beyond that, you&rsquo;ll find cuckoo filters powering real systems and libraries such as:</p>
+<ul>
+<li><strong>Cache backends:</strong> RedisBloom’s module <a href="https://github.com/RedisBloom/RedisBloom"><code>RedisBloom</code></a> for ultra‑fast key‑existence checks in Redis.</li>
+<li><strong>Embedded &amp; network gear:</strong> Zig implementation <a href="https://github.com/kristoff-it/zig-cuckoofilter"><code>kristoff‑it/zig‑cuckoofilter</code></a> running on routers, switches, and IoT devices.</li>
+<li><strong>Go‑based services &amp; CDC pipelines:</strong> The Go package <a href="https://github.com/seiflotfy/cuckoofilter"><code>seiflotfy/cuckoofilter</code></a> used in microservices and change‑data‑capture systems.</li>
+<li><strong>JVM ecosystems:</strong> Java library <a href="https://github.com/MGunlogson/CuckooFilter4J"><code>CuckooFilter4J</code></a> for Kafka Connect, Elasticsearch plugins, and other high‑throughput Java apps.</li>
+<li><strong>Rust streaming &amp; telemetry:</strong> Rust crate <a href="https://crates.io/crates/cuckoofilter"><code>cuckoofilter</code></a> powering sliding-window analytics and privacy‑preserving frameworks.</li>
+</ul>
+<h2 class="heading" id="implementing-a-cuckoo-filter-in-c">
+  Implementing a Cuckoo Filter in C
+  <a class="anchor" href="#implementing-a-cuckoo-filter-in-c">#</a>
+</h2>
+<h2 class="heading" id="applying-it-timing-safe-password-checks">
+  Applying It: Timing-Safe Password Checks
+  <a class="anchor" href="#applying-it-timing-safe-password-checks">#</a>
+</h2>
+<h2 class="heading" id="limitations-and-considerations">
+  Limitations and Considerations
+  <a class="anchor" href="#limitations-and-considerations">#</a>
+</h2>
+<h2 class="heading" id="conclusion">
+  Conclusion
+  <a class="anchor" href="#conclusion">#</a>
+</h2>
+
+
+    </main>
+  </div>
+
+  
+  
+
+
+
+
+
+    
+
+
+
+
+  <footer>
+    
+
+    
+    
+
+
+
+
+
+    
+
+
+
+
+    
+    
+    
+    <p>Created by <a href="https://github.com/JavaHammes">JavaHammes</a></p>
+    
+
+
+  </footer>
+
+  
+</body>
+
+<script src="/room4A.dev/js/theme-switch.js"></script>
+<script defer src="/room4A.dev/js/copy-code.js"></script>
+</html>
