@@ -189,7 +189,7 @@ The goal here is to implement the core functionality of a Cuckoo filter in C, wr
 
 This way, it's easier to understand how the algorithm works under the hood, and the code will closely reflect the concepts described in the paper.
 
-1. **Insert**
+2. **Insert**
 
 ```
 // Generate a short fingerprint from the input
@@ -248,13 +248,15 @@ return False;
 From reading the pseudo code a few questions remain. These will be answered in a Q&A in the following:
 
 1. Q: What hash function is used? A: The paper does not mandate a specific hash function. However, in their implementation, the authors use CityHash for its speed and distribution properties.
-3. Q: How is the fingerprint calculated? A: `fingerprint(x) = truncate_bits(Hash(x),f)`, with f being the fingerprint length in bits
-4. Q: What size should fingerprints be? A: The fingerprint size f depends on both the desired false positive rate (`ε`) and the bucket size (`b`). It must satisfy:
-`f ≥ log₂(1/ε) + log₂(2b)`
-5. Q: What is a bucket? A: A bucket is a container that holds a small number of fingerprints, usually 2 to 4.
-7. Q: How many entries does a bucket have? A: The number of entries per bucket is chosen based on the desired false positive rate. For a false positive rate between `0.00001` and `0.002`, a bucket size of 4 entries minimizes space usage. The paper primarily focuses on 2 and 4-entry buckets.
-9. Q: How many buckets do we need? A:
-10. Q: What is MaxNumKicks? A: MaxNumKicks is the maximum number of displacement attempts during insertion before declaring a failure. The authors use 500 in their implementation, which balances performance and success rate.
+2. Q: How is the fingerprint calculated? A: `fingerprint(x) = truncate_bits(Hash(x),f)`, with f being the fingerprint length in bits
+3. Q: What size should fingerprints be? A: The fingerprint size f depends on both the desired false positive rate (`ε`) and the bucket size (`b`). It must satisfy: `f ≥ log₂(1/ε) + log₂(2b)`
+4. Q: What is a bucket? A: A bucket is a container that holds a small number of fingerprints, usually 2 to 4.
+5. Q: How many entries does a bucket have? A: The number of entries per bucket is chosen based on the desired false positive rate. For a false positive rate between `0.00001` and `0.002`, a bucket size of 4 entries minimizes space usage. The paper primarily focuses on 2 and 4-entry buckets.
+6. Q: How many buckets do we need? A:
+7. Q: What is MaxNumKicks? A: MaxNumKicks is the maximum number of displacement attempts during insertion before declaring a failure. The authors use 500 in their implementation, which balances performance and success rate.
+
+Alright let's get started.
+
 
 ## Applying It: Avoiding Unnecessary Cache Lookups
 

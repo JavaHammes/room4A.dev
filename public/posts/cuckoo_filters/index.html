@@ -269,13 +269,13 @@ When a key is evicted from cache (or explicitly removed), its fingerprint is del
   <a class="anchor" href="#what-is-a-cuckoo-filter">#</a>
 </h3>
 <p>So now that we&rsquo;ve seen what Bloom filters can (and can&rsquo;t) do, let&rsquo;s meet their smarter, cooler cousin: the <strong>Cuckoo Filter</strong>.</p>
-<p>Cuckoo filters are based on something called <strong>cuckoo hashing</strong>, which is a fancy way of saying: if something&rsquo;s in the way, we kick it out and make room. Like the bird. (Yes, the name really does come from there.)</p>
-<p>Compared to Bloom filters, cuckoo filters have a few standout features:</p>
+<p>Cuckoo filters are based on <a href="https://link.springer.com/chapter/10.1007/3-540-44676-1_10">Cuckoo hashing</a>, which gets its name from the cuckoo bird that lays its eggs in other birds&rsquo; nests, and, like in the algorithm, if something&rsquo;s in the way, it&rsquo;s kicked out to make room.</p>
+<p>Compared to Bloom filters, Cuckoo filters have a few standout features:</p>
 <ul>
 <li>You can delete items.</li>
-<li>They stay fast and reliable even when the filter is almost full (up to 95% full and still happy).</li>
-<li>They can actually use less space than Bloom filters, especially if you&rsquo;re aiming for low false positive rates (<code>&lt;3%</code>).</li>
-<li>And bonus: they&rsquo;re easier to implement than some of the other fancy alternatives like quotient filters.</li>
+<li>They stay fast and reliable even when the filter is almost full.</li>
+<li>They can actually use less space than Bloom filters.</li>
+<li>And bonus: they&rsquo;re easier to implement than some of the other fancy alternatives like <a href="https://systemdesign.one/quotient-filter-explained/">Quotient filters</a>.</li>
 </ul>
 <h4 class="heading" id="how-it-works-1">
   How It Works
@@ -329,26 +329,79 @@ When a key is evicted from cache (or explicitly removed), its fingerprint is del
 </ul>
 <p><em>&ldquo;Cuckoo.&rdquo;</em></p>
 <p>(Still not over it.)</p>
-<p>Check out <a href="https://bdupras.github.io/filter-tutorial/">Probabilistic Filters by Example</a> for an interactive comparsion of cuckoo and bloom filters in action.</p>
-<h3 class="heading" id="where-cuckoo-filters-really-shine">
-  Where Cuckoo Filters Really Shine
-  <a class="anchor" href="#where-cuckoo-filters-really-shine">#</a>
-</h3>
-<p>In our demo, we&rsquo;ll use a cuckoo filter to deduplicate IPs from a web server log. Beyond that, you&rsquo;ll find cuckoo filters powering real systems and libraries such as:</p>
-<ul>
-<li><strong>Cache backends:</strong> RedisBloom’s module <a href="https://github.com/RedisBloom/RedisBloom"><code>RedisBloom</code></a> for ultra‑fast key‑existence checks in Redis.</li>
-<li><strong>Embedded &amp; network gear:</strong> Zig implementation <a href="https://github.com/kristoff-it/zig-cuckoofilter"><code>kristoff‑it/zig‑cuckoofilter</code></a> running on routers, switches, and IoT devices.</li>
-<li><strong>Go‑based services &amp; CDC pipelines:</strong> The Go package <a href="https://github.com/seiflotfy/cuckoofilter"><code>seiflotfy/cuckoofilter</code></a> used in microservices and change‑data‑capture systems.</li>
-<li><strong>JVM ecosystems:</strong> Java library <a href="https://github.com/MGunlogson/CuckooFilter4J"><code>CuckooFilter4J</code></a> for Kafka Connect, Elasticsearch plugins, and other high‑throughput Java apps.</li>
-<li><strong>Rust streaming &amp; telemetry:</strong> Rust crate <a href="https://crates.io/crates/cuckoofilter"><code>cuckoofilter</code></a> powering sliding-window analytics and privacy‑preserving frameworks.</li>
-</ul>
+<p>Check out <a href="https://bdupras.github.io/filter-tutorial/">Probabilistic Filters by Example</a> for an interactive comparsion of Cuckoo and Bloom filters in action.</p>
 <h2 class="heading" id="implementing-a-cuckoo-filter-in-c">
   Implementing a Cuckoo Filter in C
   <a class="anchor" href="#implementing-a-cuckoo-filter-in-c">#</a>
 </h2>
-<h2 class="heading" id="applying-it-timing-safe-password-checks">
-  Applying It: Timing-Safe Password Checks
-  <a class="anchor" href="#applying-it-timing-safe-password-checks">#</a>
+<p>Now the fun begins.</p>
+<p>By now, you should have a general understanding of what a Cuckoo filter is and how it works. Let&rsquo;s move on to implementing one.</p>
+<p>The goal here is to implement the core functionality of a Cuckoo filter in C, writing the functions in a way that stays as close as possible to the pseudo code from the <a href="https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf">original paper introducing Cuckoo filters</a>:</p>
+<p>This way, it&rsquo;s easier to understand how the algorithm works under the hood, and the code will closely reflect the concepts described in the paper.</p>
+<ol start="2">
+<li><strong>Insert</strong></li>
+</ol>
+<pre tabindex="0"><code>// Generate a short fingerprint from the input
+f = fingerprint(x);
+
+// Compute two candidate bucket indices
+i1 = hash(x);
+i2 = i1 xor hash(f);
+
+// Try to insert into either bucket directly
+if bucket[i1] or bucket[i2] has an empty entry then
+    add f to that bucket;
+    return Done;
+
+// If both are full, we need to reloacte items
+i = randomly pick i1 or i2;
+for n = 0; n &lt; MaxNumKicks; n++ do
+    randomly select an entry e from bucket[i];
+    swap f and the fingerprint stored in entry e;
+    i = i xor hash(f); // compute alternate index for new f
+    if bucket[i] has an empty entry then
+        add f to bucket[i];
+        return Done;
+
+// Too many kicks means the table is too full
+return Failure;
+</code></pre><ol start="2">
+<li><strong>Lookup</strong></li>
+</ol>
+<pre tabindex="0"><code>// Recreate the fingerprint and candidate buckets
+f = fingerprint(x);
+i1 = hash(x);
+i2 = i1 xor hash(f);
+
+// If either bucket contains the fingerprint, it might be a match
+if bucket[i1] or bucket[i2] has f then
+    return True;
+return False;
+</code></pre><ol start="3">
+<li><strong>Delete</strong></li>
+</ol>
+<pre tabindex="0"><code>// Recreate the fingerprint and candidate buckets
+f = fingerprint(x);
+i1 = hash(x);
+i2 = i1 xor hash(f);
+if bucket[i1] or bucket[i2] has f then
+    remove a copy of f from this bucket;
+    return True;
+return False;
+</code></pre><p>From reading the pseudo code a few questions remain. These will be answered in a Q&amp;A in the following:</p>
+<ol>
+<li>Q: What hash function is used? A: The paper does not mandate a specific hash function. However, in their implementation, the authors use CityHash for its speed and distribution properties.</li>
+<li>Q: How is the fingerprint calculated? A: <code>fingerprint(x) = truncate_bits(Hash(x),f)</code>, with f being the fingerprint length in bits</li>
+<li>Q: What size should fingerprints be? A: The fingerprint size f depends on both the desired false positive rate (<code>ε</code>) and the bucket size (<code>b</code>). It must satisfy: <code>f ≥ log₂(1/ε) + log₂(2b)</code></li>
+<li>Q: What is a bucket? A: A bucket is a container that holds a small number of fingerprints, usually 2 to 4.</li>
+<li>Q: How many entries does a bucket have? A: The number of entries per bucket is chosen based on the desired false positive rate. For a false positive rate between <code>0.00001</code> and <code>0.002</code>, a bucket size of 4 entries minimizes space usage. The paper primarily focuses on 2 and 4-entry buckets.</li>
+<li>Q: How many buckets do we need? A:</li>
+<li>Q: What is MaxNumKicks? A: MaxNumKicks is the maximum number of displacement attempts during insertion before declaring a failure. The authors use 500 in their implementation, which balances performance and success rate.</li>
+</ol>
+<p>Alright let&rsquo;s get started.</p>
+<h2 class="heading" id="applying-it-avoiding-unnecessary-cache-lookups">
+  Applying It: Avoiding Unnecessary Cache Lookups
+  <a class="anchor" href="#applying-it-avoiding-unnecessary-cache-lookups">#</a>
 </h2>
 <h2 class="heading" id="limitations-and-considerations">
   Limitations and Considerations
