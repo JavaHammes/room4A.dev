@@ -1,17 +1,16 @@
 +++
 date = '2025-07-26T16:31:28+02:00'
-draft = true
+draft = false
 title = 'No Birds Were Harmed in the Making of This Data Structure'
 +++
 
-Let's get this out of the way: no, this post isn't about ornithology. And yes, I did choose this topic *at least partly* because of the name: **Cuckoo**.
+Let's get this out of the way: no, this post isn't about [ornithology](https://en.wikipedia.org/wiki/Ornithology). And yes, I did choose this topic *at least partly* because of the name: **Cuckoo**.
 
 Go ahead, say it out loud: *“Cuckoo.”*
-One more time? **“Cuckoo.”** Yeah. Still funny.
 
 But while the name comes from a famously pushy bird species, what we're really talking about here is a very clever and very efficient **probabilistic data structure**: the **Cuckoo filter**.
 
-Unlike its avian namesake, this filter isn't interested in nests, it's more into fast lookups, low memory usage, and a surprisingly satisfying ability to delete things (a rare treat in this data structure family).
+Unlike its avian namesake, this filter isn't interested in nests, it's more into fast lookups, low memory usage, and an ability to delete things (a rare treat in this data structure family).
 
 If you've ever heard of a **Bloom filter**, the Cuckoo filter is its more flexible, deletion-friendly cousin. Still fast. Still space-efficient. Just... better at kicking things out when it needs to.
 
@@ -25,17 +24,17 @@ In this post, we'll:
 ## What are Cuckoo Filters?
 
 ### Short Answer:
-A Cuckoo Filter is a small and fast way to check if something is probably in a set. It uses little memory, works quickly, and lets you remove items, while still keeping errors low.
+A Cuckoo filter is a small and fast way to check if something is probably in a set. It uses little memory, works quickly, and lets you remove items, while still keeping errors low.
 
 ### The Longer Explanation:
 
-Cuckoo Filters are a modern alternative to [Bloom filters](https://systemdesign.one/bloom-filters-explained/) for approximate set membership queries. They allow you to check whether an item is probably in a set, with the guarantee that you'll never get a false negative (i.e., if it says "no", the item is definitely not there).
+Cuckoo filters are a modern alternative to [Bloom filters](https://systemdesign.one/bloom-filters-explained/) for approximate set membership queries. They allow you to check whether an item is probably in a set, with the guarantee that you'll never get a false negative (i.e., if it says "no", the item is definitely not there).
 
-Unlike Bloom Filters, Cuckoo Filters support deletions and retain high lookup performance even when nearly full. This makes them ideal for large-scale systems, like caches, databases, or networking equipment, where fast, memory-efficient lookups matter more than perfect accuracy.
+Unlike Bloom filters, Cuckoo filters support deletions and retain high lookup performance even when nearly full. This makes them ideal for large-scale systems, like caches, databases, or networking equipment, where fast, memory-efficient lookups matter more than perfect accuracy.
 
 ### A Quick Detour: Bloom Filters
 
-Before we can appreciate why cuckoo filters are cool, we've got to take a quick look at what came before them: **Bloom filters**. Think of them as the grandparent in the family of "probably-in-the-set" data structures.
+Before we can appreciate why Cuckoo filters are cool, we've got to take a quick look at what came before them: **Bloom filters**. Think of them as the grandparent in the family of "probably-in-the-set" data structures.
 
 So what do they do? A Bloom filter lets you ask: "Is this item in my set?" And it'll give you one of two answers:
 
@@ -72,11 +71,11 @@ Now someone later asks, “Was ‘banana’ here?”
 
 Still, for a long time, Bloom filters were the go-to tool for fast, compact set membership checks. But they've got their limits, especially if your use case includes deleting stuff or operating close to full capacity.
 
-That's where cuckoo filters come in.
+That's where Cuckoo filters come in.
 
 ### What is a Cuckoo Filter?
 
-So now that we've seen what Bloom filters can (and can't) do, let's meet their smarter, cooler cousin: the **Cuckoo Filter**.
+So now that we've seen what Bloom filters can (and can't) do, let's meet their smarter, cooler cousin: the **Cuckoo filter**.
 
 Cuckoo filters are based on [Cuckoo hashing](https://link.springer.com/chapter/10.1007/3-540-44676-1_10), which gets its name from the cuckoo bird that lays its eggs in other birds' nests, and, like in the algorithm, if something's in the way, it's kicked out to make room.
 
@@ -89,7 +88,7 @@ Compared to Bloom filters, Cuckoo filters have a few standout features:
 
 #### How It Works
 
-Instead of storing full items, a cuckoo filter stores short fingerprints, small hash-based representations of each item.
+Instead of storing full items, a Cuckoo filter stores short fingerprints, small hash-based representations of each item.
 
 Each fingerprint can go in one of two possible buckets, which are chosen using a pair of hash functions. If both buckets already have something in them?
 
@@ -101,7 +100,7 @@ Because the filter only stores small fingerprints instead of full items, it save
 
 Let’s keep going with the same locker hallway idea from earlier, but now we're switching from *Bloom filters* to *Cuckoo filters*.
 
-In a cuckoo filter, instead of flipping bits in lockers, we actually store short fingerprints, tiny codes that represent the items we care about. And each fingerprint is only allowed to live in two possible lockers, chosen by hashing the original item.
+In a Cuckoo filter, instead of flipping bits in lockers, we actually store short fingerprints, tiny codes that represent the items we care about. And each fingerprint is only allowed to live in two possible lockers, chosen by hashing the original item.
 
 **Same example: adding "banana"**
 
@@ -134,7 +133,7 @@ We'll go into more detail when we implement it.
 Cuckoo filters are:
 
 - Like Bloom filters, but with deletion and better space efficiency in many real-world cases.
-- Based on cuckoo hashing, which lets them keep performance high even when the structure is almost full.
+- Based on Cuckoo hashing, which lets them keep performance high even when the structure is almost full.
 - Easy to implement, surprisingly powerful, and honestly just kind of fun to say.
 
 *"Cuckoo."*
@@ -143,7 +142,7 @@ Cuckoo filters are:
 
 Check out [Probabilistic Filters by Example](https://bdupras.github.io/filter-tutorial/) for an interactive comparsion of Cuckoo and Bloom filters in action.
 
-## Implementing a Cuckoo Filter in C
+## Implementing a Cuckoo filter in C
 
 Now the fun begins.
 
@@ -213,25 +212,25 @@ return False;
 
 From reading the pseudo code a few questions remain. These will be answered in a Q&A in the following:
 
-1. Q: What hash function do we use? A: We use [MurmurHash3](https://github.com/PeterScott/murmur3) (x86_32) for both the key and the fingerprint. It’s fast, well‑distributed, and easy to drop in.
+1. **Q**: What hash function do we use? **A**: We use [MurmurHash3](https://github.com/PeterScott/murmur3) (x86_32) for both the key and the fingerprint. It’s fast, well‑distributed, and easy to drop in.
 
-2. Q: How is the fingerprint calculated?
-A:
+2. **Q**: How is the fingerprint calculated?
+**A**:
 ```c
 MurmurHash3_x86_32(&key, sizeof(key), FP_HASH_SEED, &raw);
 fingerprint = (uint16_t)(raw & 0xFFFF);
 ```
 We simply truncate Murmur3’s 32‑bit output to 16 bits.
 
-3. Q: What size should fingerprints be? A: Fingerprint length `f` must satisfy `f ≥ log₂(1/ε) + log₂(2b)` where `ε` is your target false‑positive rate and `b` is bucket capacity. For `ε≈0.001` and `b=4`, `16 bits` is plenty.
+3. **Q**: What size should fingerprints be? **A**: Fingerprint length `f` must satisfy `f ≥ log₂(1/ε) + log₂(2b)` where `ε` is your target false‑positive rate and `b` is bucket capacity. For `ε≈0.001` and `b=4`, `16 bits` is plenty.
 
-4. Q: What is a bucket? A: A bucket holds up to `BUCKET_SIZE` fingerprints (we choose 4). It's just a tiny array.
+4. **Q**: What is a bucket? **A**: A bucket holds up to `BUCKET_SIZE` fingerprints (we choose 4). It's just a tiny array.
 
-5. Q: How many entries per bucket? A: We use 4 entries. The original paper shows that for `ε` between `0.00001` and `0.002`, 4‑entry buckets minimize total space.
+5. **Q**: How many entries per bucket? **A**: We use 4 entries. The original paper shows that for `ε` between `0.00001` and `0.002`, 4‑entry buckets minimize total space.
 
-6. Q: How many buckets do we need? A: Pick a power‑of‑two large enough to hold your max items at `~95%` load. In our tests we used `2 048 buckets × 4 slots = 8 192 capacity`;
+6. **Q**: How many buckets do we need? **A**: Pick a power‑of‑two large enough to hold your max items at `~95%` load. In our tests we used `2 048 buckets × 4 slots = 8 192 capacity`;
 
-7. Q: What is `MaxNumKicks`? A: The maximum number of displacement attempts per insert. We use `500`, as in the paper, it balances insert success rate against latency.
+7. **Q**: What is `MaxNumKicks`? **A**: The maximum number of displacement attempts per insert. We use `500`, as in the paper, it balances insert success rate against latency.
 
 Alright let's get started.
 
@@ -353,31 +352,7 @@ cuckoo_status cf_delete(cuckoo_filter *cf, uint32_t key) {
 }
 ```
 
-### 3. Putting It All Together
-
-Now that we've covered every component, from fingerprint generation to bucket management and the kick‑out logic, let's assemble the complete Cuckoo filter.
-
-#### 1. Compile
-
-```bash
-cmake -B build
-cmake --build build
-```
-
-#### 2. Run the demo
-
-```bash
-./bin/cuckoo
-```
-
-#### 3. Execute the test suite
-
-```bash
-cd build
-ctest --verbose
-```
-
-#### 4. Test Results
+> See how to run the code on [GitHub](https://github.com/JavaHammes/cuckoo).
 
 All tests passed! Here's how reality lines up with theory:
 
@@ -444,10 +419,7 @@ Theory and practice don't always match exactly.
     - Paper: Any capacity ≥ items/max_load.
     - Ours: Power‑of‑two (e.g. 2048) to make mod a bitmask.
 
-5. Error Handling
-    - We treat "already present" as a success on `cf_insert`. If you want strict "no dupes", you'd add a `table_lookup` before inserting.
-
-6. Resize / Dynamic Scaling
+5. Resize / Dynamic Scaling
     - We don't support growing or shrinking. Real systems may need a "rehash to bigger table" path once load > 95%.
 
 ## Limitations and Considerations
@@ -455,27 +427,24 @@ Theory and practice don't always match exactly.
 By now, Cuckoo filters might sound like the silver bullet for all your approximate set membership needs. And honestly, they are great, but no data structure gets away without a few trade-offs. So before you go replacing every Bloom filter in your infrastructure with a Cuckoo filter, let's talk about the fine print.
 
 1. No Duplicate Counting
-Cuckoo filters aren't designed to track how many times an item was inserted. Insert the same key twice, and it'll still only take one slot. If your use case needs frequency tracking, this isn't your tool.
-    - Workaround: Consider counting Cuckoo filters, which embed a small counter alongside each fingerprint. This adds a few extra bits per slot but lets you track insertion counts.
+    - Cuckoo filters aren't designed to track how many times an item was inserted. Insert the same key twice, and it'll still only take one slot. If your use case needs frequency tracking, this isn't your tool.
+    - Workaround: Consider [counting Cuckoo filters](https://arxiv.org/abs/2003.03801), which embed a small counter alongside each fingerprint. This adds a few extra bits per slot but lets you track insertion counts.
 
 2. Resize Resistance
-Unlike some structures that support dynamic resizing (e.g. vectors, hash tables), a basic Cuckoo filter doesn't grow once it's full. When insertions start failing, your only option is to reallocate a larger table and reinsert everything.
-
+    - Unlike some structures that support dynamic resizing (e.g. vectors, hash tables), a basic Cuckoo filter doesn't grow once it's full. When insertions start failing, your only option is to reallocate a larger table and reinsert everything.
     - Some advanced implementations support resizing or even use multiple filters chained together, but that adds complexity (and code). For embedded systems or bounded workloads, this isn't a dealbreaker. For dynamic workloads, keep this in mind.
 
 3. Insert May Fail
-This one surprises people: inserts can fail even when there's technically space left. If the kick-out chain exceeds `MaxNumKicks`, the item isn't added. You're trading simplicity for a small risk of failure. In our tests, insertions succeeded up to about 97% full, but after that, it gets dicey.
-
-You could retry with a new fingerprint or even rehash the entire table, but again, that’s complexity you'll have to manage.
+    - This one surprises people: inserts can fail even when there's technically space left. If the kick-out chain exceeds `MaxNumKicks`, the item isn't added. You're trading simplicity for a small risk of failure. In our tests, insertions succeeded up to about 97% full, but after that, it gets dicey.
+    - You could retry with a new fingerprint or even rehash the entire table, but again, that’s complexity you'll have to manage.
 
 4. False Positives Still Exist
-Like any approximate membership structure, Cuckoo filters can lie. False-positive rate ≤ `2·bucket_size / 2^f`, so you can make FP rates arbitrarily low by increasing fingerprint size, but never zero.
+    - Like any approximate membership structure, Cuckoo filters can lie. False-positive rate ≤ `2·bucket_size / 2^f`, so you can make FP rates arbitrarily low by increasing fingerprint size, but never zero.
 So if your application requires absolute certainty, like a password blacklist or medical diagnosis system... yeah, don't.
-
-Also, remember that deleting an item that was never inserted can remove something else if its fingerprint matches, a rare edge case, but one worth noting.
+    - Also, remember that deleting an item that was never inserted can remove something else if its fingerprint matches, a rare edge case, but one worth noting.
 
 5. Fingerprint Collisions
-By storing just a fingerprint, we lose the ability to distinguish between different keys that hash to the same tiny value. That's the price we pay for space efficiency. It's rare (especially with 16-bit fingerprints), but it's why deletions must be used carefully and why lookups can lie.
+    - By storing just a fingerprint, we lose the ability to distinguish between different keys that hash to the same tiny value. That's the price we pay for space efficiency. It's rare (especially with 16-bit fingerprints), but it's why deletions must be used carefully and why lookups can lie.
 
 ## Conclusion
 
