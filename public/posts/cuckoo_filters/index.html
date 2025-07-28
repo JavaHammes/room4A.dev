@@ -32,7 +32,7 @@
 
 <title>
     
-    Only a Cuckoo Would Check the Cache Every Time | room4A
+    No Birds Were Harmed in the Making of This Data Structure | room4A
     
 </title>
 
@@ -40,12 +40,10 @@
 
 <meta property="og:url" content="http://localhost:1313/room4A.dev/posts/cuckoo_filters/">
   <meta property="og:site_name" content="room4A">
-  <meta property="og:title" content="Only a Cuckoo Would Check the Cache Every Time">
-  <meta property="og:description" content="Yes, I’ll admit it, part of the reason I chose to write about this topic is because of the name: Cuckoo. Just say it out loud with me: “Cuckoo.” One more time? “Cuckoo”. Yeah, that’s fun.
-No, this post isn’t about the bird (though that’s where the data structure gets its name), it’s about Cuckoo Filters.
-But what are Cuckoo filters?
-Here’s the official definition from Redis:
-A Cuckoo filter, just like a Bloom filter, is a probabilistic data structure that enables you to check if an element is present in a set in a very fast and space-efficient way, while also allowing for deletions and showing better performance than Bloom in some scenarios.">
+  <meta property="og:title" content="No Birds Were Harmed in the Making of This Data Structure">
+  <meta property="og:description" content="Let’s get this out of the way: no, this post isn’t about ornithology. And yes, I did choose this topic at least partly because of the name: Cuckoo.
+Go ahead, say it out loud: “Cuckoo.” One more time? “Cuckoo.” Yeah. Still funny.
+But while the name comes from a famously pushy bird species, what we’re really talking about here is a very clever and very efficient probabilistic data structure: the Cuckoo filter.">
   <meta property="og:locale" content="en_us">
   <meta property="og:type" content="article">
     <meta property="article:section" content="posts">
@@ -137,73 +135,21 @@ A Cuckoo filter, just like a Bloom filter, is a probabilistic data structure tha
 
     <main class="main">
       
-  <h1>Only a Cuckoo Would Check the Cache Every Time</h1>
+  <h1>No Birds Were Harmed in the Making of This Data Structure</h1>
   <p>July 26, 2025</p>
-<p>Yes, I&rsquo;ll admit it, part of the reason I chose to write about this topic is because of the name: Cuckoo. Just say it out loud with me: <em>&ldquo;Cuckoo.&rdquo;</em> One more time? <strong>&ldquo;Cuckoo&rdquo;</strong>. Yeah, that&rsquo;s fun.</p>
-<p>No, this post isn&rsquo;t about the bird (though that&rsquo;s where the data structure gets its name), it&rsquo;s about <strong>Cuckoo Filters</strong>.</p>
-<p>But what are Cuckoo filters?</p>
-<p>Here&rsquo;s the official definition from <a href="https://redis.io/docs/latest/develop/data-types/probabilistic/cuckoo-filter/">Redis</a>:</p>
-<blockquote>
-<p>A Cuckoo filter, just like a Bloom filter, is a probabilistic data structure that enables you to check if an element is present in a set in a very fast and space-efficient way, while also allowing for deletions and showing better performance than Bloom in some scenarios.</p>
-</blockquote>
-<p>Okay, &ldquo;probabilistic data structure&rdquo;, &ldquo;space-efficient&rdquo;, &ldquo;Bloom filter&rdquo;&hellip; what does any of that even mean?</p>
-<p>(If you don&rsquo;t know what a data structure is, this might not be the post for you. But if you&rsquo;re just fuzzy on the rest, no worries, you&rsquo;re in the right place.)</p>
-<p>In this post, we&rsquo;ll uncover what&rsquo;s behind the quirky name &ldquo;Cuckoo&rdquo; and explore where cuckoo filters shine. We&rsquo;ll also dive into a hands-on implementation in C, and put it to use in a practical scenario: <strong>using a Cuckoo Filter to avoid unnecessary cache lookups.</strong></p>
+<p>Let&rsquo;s get this out of the way: no, this post isn&rsquo;t about ornithology. And yes, I did choose this topic <em>at least partly</em> because of the name: <strong>Cuckoo</strong>.</p>
+<p>Go ahead, say it out loud: <em>“Cuckoo.”</em>
+One more time? <strong>“Cuckoo.”</strong> Yeah. Still funny.</p>
+<p>But while the name comes from a famously pushy bird species, what we&rsquo;re really talking about here is a very clever and very efficient <strong>probabilistic data structure</strong>: the <strong>Cuckoo filter</strong>.</p>
+<p>Unlike its avian namesake, this filter isn&rsquo;t interested in nests, it&rsquo;s more into fast lookups, low memory usage, and a surprisingly satisfying ability to delete things (a rare treat in this data structure family).</p>
+<p>If you&rsquo;ve ever heard of a <strong>Bloom filter</strong>, the Cuckoo filter is its more flexible, deletion-friendly cousin. Still fast. Still space-efficient. Just&hellip; better at kicking things out when it needs to.</p>
+<p>In this post, we&rsquo;ll:</p>
+<ul>
+<li>Demystify what a Cuckoo filter is (no ornithology degree required),</li>
+<li>Compare it to Bloom filters so we know why anyone would bother,</li>
+<li>And build one from scratch in C, because what&rsquo;s more fun than implementing a space-efficient hash structure with a name that makes you giggle?</li>
+</ul>
 <hr>
-<h2 class="heading" id="cache-admission-filter-avoiding-pointless-cache-lookups">
-  Cache Admission Filter: Avoiding Pointless Cache Lookups
-  <a class="anchor" href="#cache-admission-filter-avoiding-pointless-cache-lookups">#</a>
-</h2>
-<h3 class="heading" id="the-basics">
-  The Basics
-  <a class="anchor" href="#the-basics">#</a>
-</h3>
-<ul>
-<li>
-<p><strong>What&rsquo;s a cache?</strong>
-A cache is a fast-access storage layer that keeps frequently used data close by, so you don&rsquo;t always have to fetch it from a slower backend (like a database or external service).</p>
-</li>
-<li>
-<p><strong>The issue:</strong>
-Even when a key isn&rsquo;t in the cache, systems often still check it, just in case. Each of those checks has a cost: a network round-trip, added latency, or resource usage on the cache server.</p>
-</li>
-</ul>
-<h3 class="heading" id="the-idea">
-  The Idea
-  <a class="anchor" href="#the-idea">#</a>
-</h3>
-<p>Use a <strong>Cuckoo filter</strong> as a quick pre-check before hitting the cache.</p>
-<ul>
-<li>If the filter says <strong>&ldquo;no&rdquo;</strong>, the key definitely isn’t in the cache, skip it and go straight to the backend.</li>
-<li>If the filter says <strong>&ldquo;maybe&rdquo;</strong>, check the cache as usual.</li>
-</ul>
-<p>This avoids unnecessary cache lookups when there&rsquo;s no realistic chance of a hit.</p>
-<h3 class="heading" id="how-it-works">
-  How It Works
-  <a class="anchor" href="#how-it-works">#</a>
-</h3>
-<ol>
-<li>
-<p><strong>Cuckoo Filter Tracks Cached Keys</strong>
-It stores lightweight fingerprints of the keys currently in cache.</p>
-</li>
-<li>
-<p><strong>Update on Cache Writes</strong>
-When a new key-value pair is added to the cache, the key&rsquo;s fingerprint is also added to the filter.</p>
-</li>
-<li>
-<p><strong>Remove on Eviction or Invalidation</strong>
-When a key is evicted from cache (or explicitly removed), its fingerprint is deleted from the filter.</p>
-</li>
-<li>
-<p><strong>Check on Read</strong></p>
-<ul>
-<li><strong>Not in filter</strong> -&gt; Skip the cache and go directly to the source.</li>
-<li><strong>Maybe in filter</strong> -&gt; Check the cache as usual. If it&rsquo;s a miss, fallback to the backend and refresh both the cache and the filter.</li>
-</ul>
-</li>
-</ol>
-<p>This isn&rsquo;t a magic bullet, but if your workload includes lots of failed cache lookups, it&rsquo;s a cheap way to reduce overhead.</p>
 <h2 class="heading" id="what-are-cuckoo-filters">
   What are Cuckoo Filters?
   <a class="anchor" href="#what-are-cuckoo-filters">#</a>
@@ -217,7 +163,7 @@ When a key is evicted from cache (or explicitly removed), its fingerprint is del
   The Longer Explanation:
   <a class="anchor" href="#the-longer-explanation">#</a>
 </h3>
-<p>Cuckoo Filters are a modern alternative to Bloom Filters for approximate set membership queries. They allow you to check whether an item is probably in a set, with the guarantee that you&rsquo;ll never get a false negative (i.e., if it says &ldquo;no&rdquo;, the item is definitely not there).</p>
+<p>Cuckoo Filters are a modern alternative to <a href="https://systemdesign.one/bloom-filters-explained/">Bloom filters</a> for approximate set membership queries. They allow you to check whether an item is probably in a set, with the guarantee that you&rsquo;ll never get a false negative (i.e., if it says &ldquo;no&rdquo;, the item is definitely not there).</p>
 <p>Unlike Bloom Filters, Cuckoo Filters support deletions and retain high lookup performance even when nearly full. This makes them ideal for large-scale systems, like caches, databases, or networking equipment, where fast, memory-efficient lookups matter more than perfect accuracy.</p>
 <h3 class="heading" id="a-quick-detour-bloom-filters">
   A Quick Detour: Bloom Filters
@@ -277,9 +223,9 @@ When a key is evicted from cache (or explicitly removed), its fingerprint is del
 <li>They can actually use less space than Bloom filters.</li>
 <li>And bonus: they&rsquo;re easier to implement than some of the other fancy alternatives like <a href="https://systemdesign.one/quotient-filter-explained/">Quotient filters</a>.</li>
 </ul>
-<h4 class="heading" id="how-it-works-1">
+<h4 class="heading" id="how-it-works">
   How It Works
-  <a class="anchor" href="#how-it-works-1">#</a>
+  <a class="anchor" href="#how-it-works">#</a>
 </h4>
 <p>Instead of storing full items, a cuckoo filter stores short fingerprints, small hash-based representations of each item.</p>
 <p>Each fingerprint can go in one of two possible buckets, which are chosen using a pair of hash functions. If both buckets already have something in them?</p>
@@ -316,7 +262,7 @@ When a key is evicted from cache (or explicitly removed), its fingerprint is del
 <li>Same idea, if <code>7a</code> is in one of those lockers, just remove it.</li>
 </ul>
 <p>Obviously, there’s more going on behind the scenes, but this should be enough to get the general idea across without overcomplicating it.</p>
-<p>We&rsquo;ll go into more detail when we implement it (because, let&rsquo;s be honest, we kind of have to).</p>
+<p>We&rsquo;ll go into more detail when we implement it.</p>
 <h3 class="heading" id="in-short">
   In Short
   <a class="anchor" href="#in-short">#</a>
@@ -338,7 +284,10 @@ When a key is evicted from cache (or explicitly removed), its fingerprint is del
 <p>By now, you should have a general understanding of what a Cuckoo filter is and how it works. Let&rsquo;s move on to implementing one.</p>
 <p>The goal here is to implement the core functionality of a Cuckoo filter in C, writing the functions in a way that stays as close as possible to the pseudo code from the <a href="https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf">original paper introducing Cuckoo filters</a>:</p>
 <p>This way, it&rsquo;s easier to understand how the algorithm works under the hood, and the code will closely reflect the concepts described in the paper.</p>
-<ol start="2">
+<blockquote>
+<p>Code Repository: The full source code for this Cuckoo filter implementation in C is available on <a href="https://github.com/JavaHammes/cuckoo">GitHub</a>.</p>
+</blockquote>
+<ol>
 <li><strong>Insert</strong></li>
 </ol>
 <pre tabindex="0"><code>// Generate a short fingerprint from the input
@@ -380,37 +329,360 @@ return False;
 </code></pre><ol start="3">
 <li><strong>Delete</strong></li>
 </ol>
-<pre tabindex="0"><code>// Recreate the fingerprint and candidate buckets
-f = fingerprint(x);
-i1 = hash(x);
-i2 = i1 xor hash(f);
-if bucket[i1] or bucket[i2] has f then
-    remove a copy of f from this bucket;
-    return True;
-return False;
-</code></pre><p>From reading the pseudo code a few questions remain. These will be answered in a Q&amp;A in the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-text" data-lang="text"><span style="display:flex;"><span>// Recreate the fingerprint and candidate buckets
+</span></span><span style="display:flex;"><span>f = fingerprint(x);
+</span></span><span style="display:flex;"><span>i1 = hash(x);
+</span></span><span style="display:flex;"><span>i2 = i1 xor hash(f);
+</span></span><span style="display:flex;"><span>if bucket[i1] or bucket[i2] has f then
+</span></span><span style="display:flex;"><span>    remove a copy of f from this bucket;
+</span></span><span style="display:flex;"><span>    return True;
+</span></span><span style="display:flex;"><span>return False;
+</span></span></code></pre></div><p>From reading the pseudo code a few questions remain. These will be answered in a Q&amp;A in the following:</p>
 <ol>
-<li>Q: What hash function is used? A: The paper does not mandate a specific hash function. However, in their implementation, the authors use CityHash for its speed and distribution properties.</li>
-<li>Q: How is the fingerprint calculated? A: <code>fingerprint(x) = truncate_bits(Hash(x),f)</code>, with f being the fingerprint length in bits</li>
-<li>Q: What size should fingerprints be? A: The fingerprint size f depends on both the desired false positive rate (<code>ε</code>) and the bucket size (<code>b</code>). It must satisfy: <code>f ≥ log₂(1/ε) + log₂(2b)</code></li>
-<li>Q: What is a bucket? A: A bucket is a container that holds a small number of fingerprints, usually 2 to 4.</li>
-<li>Q: How many entries does a bucket have? A: The number of entries per bucket is chosen based on the desired false positive rate. For a false positive rate between <code>0.00001</code> and <code>0.002</code>, a bucket size of 4 entries minimizes space usage. The paper primarily focuses on 2 and 4-entry buckets.</li>
-<li>Q: How many buckets do we need? A:</li>
-<li>Q: What is MaxNumKicks? A: MaxNumKicks is the maximum number of displacement attempts during insertion before declaring a failure. The authors use 500 in their implementation, which balances performance and success rate.</li>
+<li>
+<p>Q: What hash function do we use? A: We use <a href="https://github.com/PeterScott/murmur3">MurmurHash3</a> (x86_32) for both the key and the fingerprint. It’s fast, well‑distributed, and easy to drop in.</p>
+</li>
+<li>
+<p>Q: How is the fingerprint calculated?
+A:</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#a6e22e">MurmurHash3_x86_32</span>(<span style="color:#f92672">&amp;</span>key, <span style="color:#66d9ef">sizeof</span>(key), FP_HASH_SEED, <span style="color:#f92672">&amp;</span>raw);
+</span></span><span style="display:flex;"><span>fingerprint <span style="color:#f92672">=</span> (<span style="color:#66d9ef">uint16_t</span>)(raw <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xFFFF</span>);
+</span></span></code></pre></div><p>We simply truncate Murmur3’s 32‑bit output to 16 bits.</p>
+<ol start="3">
+<li>
+<p>Q: What size should fingerprints be? A: Fingerprint length <code>f</code> must satisfy <code>f ≥ log₂(1/ε) + log₂(2b)</code> where <code>ε</code> is your target false‑positive rate and <code>b</code> is bucket capacity. For <code>ε≈0.001</code> and <code>b=4</code>, <code>16 bits</code> is plenty.</p>
+</li>
+<li>
+<p>Q: What is a bucket? A: A bucket holds up to <code>BUCKET_SIZE</code> fingerprints (we choose 4). It&rsquo;s just a tiny array.</p>
+</li>
+<li>
+<p>Q: How many entries per bucket? A: We use 4 entries. The original paper shows that for <code>ε</code> between <code>0.00001</code> and <code>0.002</code>, 4‑entry buckets minimize total space.</p>
+</li>
+<li>
+<p>Q: How many buckets do we need? A: Pick a power‑of‑two large enough to hold your max items at <code>~95%</code> load. In our tests we used <code>2 048 buckets × 4 slots = 8 192 capacity</code>;</p>
+</li>
+<li>
+<p>Q: What is <code>MaxNumKicks</code>? A: The maximum number of displacement attempts per insert. We use <code>500</code>, as in the paper, it balances insert success rate against latency.</p>
+</li>
 </ol>
 <p>Alright let&rsquo;s get started.</p>
-<h2 class="heading" id="applying-it-avoiding-unnecessary-cache-lookups">
-  Applying It: Avoiding Unnecessary Cache Lookups
-  <a class="anchor" href="#applying-it-avoiding-unnecessary-cache-lookups">#</a>
-</h2>
+<h3 class="heading" id="1-breaking-the-filter-into-four-files">
+  1. Breaking the Filter into Four Files
+  <a class="anchor" href="#1-breaking-the-filter-into-four-files">#</a>
+</h3>
+<p>To keep things sane, we&rsquo;ll split our implementation into four logical modules:</p>
+<ol>
+<li>
+<p><strong>Entry</strong> (<code>cuckoo_entry.[ch]</code>)</p>
+<ul>
+<li>Compute a tiny fingerprint (16 bits) with Murmur3</li>
+<li>Hash the original key -&gt; raw <code>h1</code></li>
+<li>Hash the fingerprint -&gt; raw <code>h2 = h1 xor hash(fp)</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Bucket</strong> (<code>cuckoo_bucket.[ch]</code>)</p>
+<ul>
+<li>A fixed‑size array of fingerprints (e.g. 4 slots)</li>
+<li><code>add</code>, <code>remove</code>, and <code>contains</code> operations</li>
+</ul>
+</li>
+<li>
+<p><strong>Table</strong> (<code>cuckoo_table.[ch]</code>)</p>
+<ul>
+<li>An array of buckets (choose a power‑of‑two count, e.g. 1024 or 2048)</li>
+<li>&ldquo;Direct&rdquo; insert (try both buckets without kicking)</li>
+<li>Lookup and delete by checking both buckets</li>
+</ul>
+</li>
+<li>
+<p><strong>Filter</strong> (<code>cuckoo_filter.[ch]</code>)</p>
+<ul>
+<li>The high‑level API:
+<ul>
+<li><code>cf_create(bucket_count, max_kicks)</code></li>
+<li><code>cf_insert(key)</code> -&gt; does direct insert -&gt; kicks on full -&gt; up to <code>max_kicks</code></li>
+<li><code>cf_lookup(key)</code> -&gt; rebuild fingerprint, check both buckets</li>
+<li><code>cf_delete(key)</code> -&gt; same as lookup but removes on match</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<p>And for fun, I also wrote a <strong><code>main.c</code></strong> demo and a <strong><code>test_cuckoo_filter.c</code></strong> suite with automated checks (basic inserts, duplicates, overflow, false positives, memory usage, you name it).</p>
+<h3 class="heading" id="2-deep-dive-into-the-implementation">
+  2. Deep Dive Into The Implementation
+  <a class="anchor" href="#2-deep-dive-into-the-implementation">#</a>
+</h3>
+<p>Below is our actual <code>cf_insert</code>, <code>cf_lookup</code>, and <code>cf_delete</code>, annotated line‑by‑line.</p>
+<h4 class="heading" id="1-cf_insert">
+  1. <code>cf_insert</code>
+  <a class="anchor" href="#1-cf_insert">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>cuckoo_status <span style="color:#a6e22e">cf_insert</span>(cuckoo_filter <span style="color:#f92672">*</span>cf, <span style="color:#66d9ef">uint32_t</span> key) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 1) Build the entry: fingerprint + two raw hashes
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        cuckoo_entry <span style="color:#f92672">*</span>e <span style="color:#f92672">=</span> <span style="color:#a6e22e">create_cuckoo_entry</span>(key);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>e) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> CF_NO_SPACE;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 2) Try the &#34;cheap&#34; direct insert into either bucket
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">table_insert_direct</span>(cf<span style="color:#f92672">-&gt;</span>table, e) <span style="color:#f92672">==</span> CF_FOUND) {
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">destroy_cuckoo_entry</span>(e);
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> CF_FOUND;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 3) Kick‑out loop: pick one of the two buckets at random
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">uint32_t</span> cur_hash <span style="color:#f92672">=</span> (<span style="color:#a6e22e">rand</span>() <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">?</span> e<span style="color:#f92672">-&gt;</span>hash1 : e<span style="color:#f92672">-&gt;</span>hash2;
+</span></span><span style="display:flex;"><span>        cuckoo_fingerprint fp <span style="color:#f92672">=</span> e<span style="color:#f92672">-&gt;</span>fp;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> n <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>; n <span style="color:#f92672">&lt;</span> cf<span style="color:#f92672">-&gt;</span>max_kicks; n<span style="color:#f92672">++</span>) {
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// 3a) Which bucket are we in?
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                <span style="color:#66d9ef">int</span> idx <span style="color:#f92672">=</span> cur_hash <span style="color:#f92672">&amp;</span> (cf<span style="color:#f92672">-&gt;</span>table<span style="color:#f92672">-&gt;</span>bucket_count <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>                cuckoo_bucket <span style="color:#f92672">*</span>b <span style="color:#f92672">=</span> <span style="color:#f92672">&amp;</span>cf<span style="color:#f92672">-&gt;</span>table<span style="color:#f92672">-&gt;</span>buckets[idx];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// 3b) Pick a random victim to evict
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                <span style="color:#66d9ef">int</span> victim <span style="color:#f92672">=</span> <span style="color:#a6e22e">rand</span>() <span style="color:#f92672">%</span> b<span style="color:#f92672">-&gt;</span>count;
+</span></span><span style="display:flex;"><span>                cuckoo_fingerprint tmp <span style="color:#f92672">=</span> b<span style="color:#f92672">-&gt;</span>fingerprints[victim];
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// 3c) Swap: place our fp in the bucket, take the victim’s fp
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                b<span style="color:#f92672">-&gt;</span>fingerprints[victim] <span style="color:#f92672">=</span> fp;
+</span></span><span style="display:flex;"><span>                fp <span style="color:#f92672">=</span> tmp;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// 3d) Compute the “alternate” bucket for the evicted fp
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                <span style="color:#66d9ef">uint32_t</span> hash_alt;
+</span></span><span style="display:flex;"><span>                <span style="color:#a6e22e">MurmurHash3_x86_32</span>(<span style="color:#f92672">&amp;</span>fp.value, <span style="color:#66d9ef">sizeof</span>(fp.value), POS2_HASH_SEED,
+</span></span><span style="display:flex;"><span>                                   <span style="color:#f92672">&amp;</span>hash_alt);
+</span></span><span style="display:flex;"><span>                cur_hash <span style="color:#f92672">=</span> cur_hash <span style="color:#f92672">^</span> hash_alt;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// 3e) Try to add the evicted fp into its other bucket
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                <span style="color:#66d9ef">int</span> alt_idx <span style="color:#f92672">=</span> cur_hash <span style="color:#f92672">&amp;</span> (cf<span style="color:#f92672">-&gt;</span>table<span style="color:#f92672">-&gt;</span>bucket_count <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">bucket_add</span>(<span style="color:#f92672">&amp;</span>cf<span style="color:#f92672">-&gt;</span>table<span style="color:#f92672">-&gt;</span>buckets[alt_idx], fp)) {
+</span></span><span style="display:flex;"><span>                        <span style="color:#a6e22e">destroy_cuckoo_entry</span>(e);
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">return</span> CF_FOUND;
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 4) Too many kicks -&gt; give up
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#a6e22e">destroy_cuckoo_entry</span>(e);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> CF_NO_SPACE;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h4 class="heading" id="2-cf_lookup">
+  2. <code>cf_lookup</code>
+  <a class="anchor" href="#2-cf_lookup">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>cuckoo_status <span style="color:#a6e22e">cf_lookup</span>(cuckoo_filter <span style="color:#f92672">*</span>cf, <span style="color:#66d9ef">uint32_t</span> key) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 1) Build a temporary entry: compute fingerprint + hash1 + hash2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        cuckoo_entry <span style="color:#f92672">*</span>e <span style="color:#f92672">=</span> <span style="color:#a6e22e">create_cuckoo_entry</span>(key);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>e) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> CF_NOT_FOUND;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 2) Check the two possible buckets for our fingerprint
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        cuckoo_status s <span style="color:#f92672">=</span> <span style="color:#a6e22e">table_lookup</span>(cf<span style="color:#f92672">-&gt;</span>table, e);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">destroy_cuckoo_entry</span>(e);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> s;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h4 class="heading" id="3-cf_delete">
+  3. <code>cf_delete</code>
+  <a class="anchor" href="#3-cf_delete">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span>cuckoo_status <span style="color:#a6e22e">cf_delete</span>(cuckoo_filter <span style="color:#f92672">*</span>cf, <span style="color:#66d9ef">uint32_t</span> key) {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 1) Build a temporary entry: compute fingerprint + hash1 + hash2
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        cuckoo_entry <span style="color:#f92672">*</span>e <span style="color:#f92672">=</span> <span style="color:#a6e22e">create_cuckoo_entry</span>(key);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>e) {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">return</span> CF_NOT_FOUND;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// 2) Try to remove the fingerprint from one of the two buckets
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        cuckoo_status s <span style="color:#f92672">=</span> <span style="color:#a6e22e">table_delete</span>(cf<span style="color:#f92672">-&gt;</span>table, e);
+</span></span><span style="display:flex;"><span>        <span style="color:#a6e22e">destroy_cuckoo_entry</span>(e);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> s;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 class="heading" id="3-putting-it-all-together">
+  3. Putting It All Together
+  <a class="anchor" href="#3-putting-it-all-together">#</a>
+</h3>
+<p>Now that we&rsquo;ve covered every component, from fingerprint generation to bucket management and the kick‑out logic, let&rsquo;s assemble the complete Cuckoo filter.</p>
+<h4 class="heading" id="1-compile">
+  1. Compile
+  <a class="anchor" href="#1-compile">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cmake -B build
+</span></span><span style="display:flex;"><span>cmake --build build
+</span></span></code></pre></div><h4 class="heading" id="2-run-the-demo">
+  2. Run the demo
+  <a class="anchor" href="#2-run-the-demo">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>./bin/cuckoo
+</span></span></code></pre></div><h4 class="heading" id="3-execute-the-test-suite">
+  3. Execute the test suite
+  <a class="anchor" href="#3-execute-the-test-suite">#</a>
+</h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span>cd build
+</span></span><span style="display:flex;"><span>ctest --verbose
+</span></span></code></pre></div><h4 class="heading" id="4-test-results">
+  4. Test Results
+  <a class="anchor" href="#4-test-results">#</a>
+</h4>
+<p>All tests passed! Here&rsquo;s how reality lines up with theory:</p>
+<pre tabindex="0"><code>1: === test_basic ===
+1: Inserted 5/5 keys
+1: Lookup 5/5 present
+1: === test_duplicates ===
+1: Lookup after 2 inserts: PASS
+1: Lookup after 1 delete: PASS
+1: Lookup after 2 deletes: PASS
+1: === test_delete_nonexistent ===
+1: Delete non-existent: PASS
+1: === test_overflow ===
+1: Inserted until full: 7947 entries
+1: Insert after full: FAIL
+1: === test_performance ===
+1: Inserted 100000 items in 2.309s
+1: Looked up 100000 items in 0.011s
+1: === test_memory_usage ===
+1: Inserted 8192 items; memory used: 24608 bytes (0.02 MB), ~3.00 bytes/item
+1: === test_false_positive_rate ===
+1: False positives: 3/50000 = 0.0001
+1: === test_reinsertion_after_delete ===
+1: Lookup after delete: PASS
+1: Lookup after reinsertion: PASS
+1: === test_random_mix ===
+1: Random mix mismatches: 0/10000
+1/1 Test #1: CuckooTests ......................   Passed    4.45 sec
+</code></pre><ul>
+<li>
+<p>Capacity:</p>
+<ul>
+<li>Observed <code>~7 947</code> inserts before failure vs. theoretical max <code>8 192</code> (<code>2 048 buckets × 4 slots</code>).</li>
+<li>Slightly lower due to random kicks failing before absolute full.</li>
+</ul>
+</li>
+<li>
+<p>Throughput:</p>
+<ul>
+<li>Inserts: 100 000 in 2.3 s (<code>~43 K ops/s</code>)</li>
+<li>Lookups: 100 000 in 0.011 s (<code>~9 M ops/s</code>)</li>
+</ul>
+</li>
+<li>
+<p>Memory Usage:</p>
+<ul>
+<li><code>8 192 entries × (2 B fingerprint + 1 B per‑bucket counter) -&gt; 24 608 B total (~3 B/item)</code>.</li>
+</ul>
+</li>
+<li>
+<p>False‑Positive Rate:</p>
+<ul>
+<li>Measured <code>3/50 000 = 0.0001 (0.01%)</code></li>
+<li>Very close to theoretical <code>ε ≤ 2b/2^f ((2 × 4)/2^16) ≈ 0.000122)</code></li>
+</ul>
+</li>
+</ul>
+<h4 class="heading" id="4-differences-to-the-paper--realworld-caveats">
+  4. Differences to the &ldquo;Paper&rdquo; / Real‑World Caveats
+  <a class="anchor" href="#4-differences-to-the-paper--realworld-caveats">#</a>
+</h4>
+<p>Theory and practice don&rsquo;t always match exactly.</p>
+<ol>
+<li>
+<p>Hash Function</p>
+<ul>
+<li>Paper: <code>CityHash</code>.</li>
+<li>Ours: <code>MurmurHash3_x86_32</code> for simplicity and portability.</li>
+</ul>
+</li>
+<li>
+<p>Fingerprint Length</p>
+<ul>
+<li>Paper: <code>f</code> is tuned per <code>ε</code> and <code>b</code>.</li>
+<li>Ours: Fixed at 16 bits (<code>uint16_t</code>)</li>
+</ul>
+</li>
+<li>
+<p>Bucket Size</p>
+<ul>
+<li>Paper: 2 or 4 entries.</li>
+<li>Ours: Hard‑coded to 4. You can tweak <code>BUCKET_SIZE</code> in <code>cuckoo_bucket.h</code>.</li>
+</ul>
+</li>
+<li>
+<p>Table Size</p>
+<ul>
+<li>Paper: Any capacity ≥ items/max_load.</li>
+<li>Ours: Power‑of‑two (e.g. 2048) to make mod a bitmask.</li>
+</ul>
+</li>
+<li>
+<p>Error Handling</p>
+<ul>
+<li>We treat &ldquo;already present&rdquo; as a success on <code>cf_insert</code>. If you want strict &ldquo;no dupes&rdquo;, you&rsquo;d add a <code>table_lookup</code> before inserting.</li>
+</ul>
+</li>
+<li>
+<p>Resize / Dynamic Scaling</p>
+<ul>
+<li>We don&rsquo;t support growing or shrinking. Real systems may need a &ldquo;rehash to bigger table&rdquo; path once load &gt; 95%.</li>
+</ul>
+</li>
+</ol>
 <h2 class="heading" id="limitations-and-considerations">
   Limitations and Considerations
   <a class="anchor" href="#limitations-and-considerations">#</a>
 </h2>
+<p>By now, Cuckoo filters might sound like the silver bullet for all your approximate set membership needs. And honestly, they are great, but no data structure gets away without a few trade-offs. So before you go replacing every Bloom filter in your infrastructure with a Cuckoo filter, let&rsquo;s talk about the fine print.</p>
+<ol>
+<li>
+<p>No Duplicate Counting
+Cuckoo filters aren&rsquo;t designed to track how many times an item was inserted. Insert the same key twice, and it&rsquo;ll still only take one slot. If your use case needs frequency tracking, this isn&rsquo;t your tool.</p>
+<ul>
+<li>Workaround: Consider counting Cuckoo filters, which embed a small counter alongside each fingerprint. This adds a few extra bits per slot but lets you track insertion counts.</li>
+</ul>
+</li>
+<li>
+<p>Resize Resistance
+Unlike some structures that support dynamic resizing (e.g. vectors, hash tables), a basic Cuckoo filter doesn&rsquo;t grow once it&rsquo;s full. When insertions start failing, your only option is to reallocate a larger table and reinsert everything.</p>
+<ul>
+<li>Some advanced implementations support resizing or even use multiple filters chained together, but that adds complexity (and code). For embedded systems or bounded workloads, this isn&rsquo;t a dealbreaker. For dynamic workloads, keep this in mind.</li>
+</ul>
+</li>
+<li>
+<p>Insert May Fail
+This one surprises people: inserts can fail even when there&rsquo;s technically space left. If the kick-out chain exceeds <code>MaxNumKicks</code>, the item isn&rsquo;t added. You&rsquo;re trading simplicity for a small risk of failure. In our tests, insertions succeeded up to about 97% full, but after that, it gets dicey.</p>
+</li>
+</ol>
+<p>You could retry with a new fingerprint or even rehash the entire table, but again, that’s complexity you&rsquo;ll have to manage.</p>
+<ol start="4">
+<li>False Positives Still Exist
+Like any approximate membership structure, Cuckoo filters can lie. False-positive rate ≤ <code>2·bucket_size / 2^f</code>, so you can make FP rates arbitrarily low by increasing fingerprint size, but never zero.
+So if your application requires absolute certainty, like a password blacklist or medical diagnosis system&hellip; yeah, don&rsquo;t.</li>
+</ol>
+<p>Also, remember that deleting an item that was never inserted can remove something else if its fingerprint matches, a rare edge case, but one worth noting.</p>
+<ol start="5">
+<li>Fingerprint Collisions
+By storing just a fingerprint, we lose the ability to distinguish between different keys that hash to the same tiny value. That&rsquo;s the price we pay for space efficiency. It&rsquo;s rare (especially with 16-bit fingerprints), but it&rsquo;s why deletions must be used carefully and why lookups can lie.</li>
+</ol>
 <h2 class="heading" id="conclusion">
   Conclusion
   <a class="anchor" href="#conclusion">#</a>
 </h2>
+<p>So, where does that leave us?</p>
+<p>Cuckoo filters are a delightful blend of simplicity and power. They&rsquo;re easy to implement, fast in practice, and solve some of the biggest headaches with Bloom filters, like deletions and poor performance at high capacity. For many modern systems, they&rsquo;re a rock-solid choice for approximate membership tests.</p>
+<p>If you&rsquo;re building a high-throughput system that needs fast lookups, tight memory usage, and occasional deletes (think: caches, security filters, deduplication systems), Cuckoo filters are a very strong contender. Just keep an eye on their limits, especially if you expect the filter to grow, and be mindful of the rare-but-real quirks of false positives and fingerprint collisions.</p>
+<p>And hey, if nothing else, at least now you know there&rsquo;s a data structure out there that shares its name with a bird that evicts its neighbors&rsquo; kids. Nature is wild.</p>
+<p>Thanks for sticking with me through all the fingerprints, buckets, kicks, and C code. I hope this post gave you a new tool for your mental toolbox, and maybe even made you laugh once or twice.</p>
+<p>Until next time:</p>
+<p>“Cuckoo.”</p>
+<p>(Still funny.)</p>
+<blockquote>
+<p>Source Code: <a href="https://github.com/JavaHammes/cuckoo">GitHub</a>.</p>
+</blockquote>
+<p>PS: I&rsquo;ve noticed that every post gets longer and denser. I promise the next one will be short and simple.</p>
+<hr>
+<p>&ldquo;It is not the strongest of the species that survives, nor the most intelligent, but the one most responsive to change.&rdquo; - Charles Darwin</p>
 
 
     </main>
