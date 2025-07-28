@@ -1,5 +1,5 @@
 +++
-date = '2025-07-26T16:31:28+02:00'
+date = '2025-07-28T16:31:28+02:00'
 draft = false
 title = 'No Birds Were Harmed in the Making of This Data Structure'
 +++
