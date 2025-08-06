@@ -6,12 +6,19 @@
     <description>Recent content in Home on room4A</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 26 Jul 2025 16:31:28 +0200</lastBuildDate>
+    <lastBuildDate>Wed, 06 Aug 2025 10:41:55 +0200</lastBuildDate>
     <atom:link href="http://localhost:1313/room4A.dev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Understanding is Compression</title>
+      <link>http://localhost:1313/room4A.dev/posts/compression/</link>
+      <pubDate>Wed, 06 Aug 2025 10:41:55 +0200</pubDate>
+      <guid>http://localhost:1313/room4A.dev/posts/compression/</guid>
+      <description>&lt;p&gt;I have to admit: I noticed all of my posts kept getting longer and longer, and I started getting bored reading them myself.&lt;/p&gt;&#xA;&lt;p&gt;So this one is going to be short. But it carries an important message:&lt;/p&gt;&#xA;&lt;p&gt;&lt;strong&gt;AI = Compression.&lt;/strong&gt;&lt;/p&gt;&#xA;&lt;hr&gt;&#xA;&lt;h2 class=&#34;heading&#34; id=&#34;the-hutter-prize&#34;&gt;&#xA;  The Hutter Prize&#xA;  &lt;a class=&#34;anchor&#34; href=&#34;#the-hutter-prize&#34;&gt;#&lt;/a&gt;&#xA;&lt;/h2&gt;&#xA;&lt;p&gt;The goal? Compress a 1GB file (&lt;code&gt;enwik9&lt;/code&gt;, the first 10⁹ bytes of English Wikipedia) as much as possible.&#xA;And for every &lt;strong&gt;1% improvement&lt;/strong&gt;, you get &lt;strong&gt;$5,000&lt;/strong&gt;.&lt;/p&gt;</description>
+    </item>
     <item>
       <title>No Birds Were Harmed in the Making of This Data Structure</title>
       <link>http://localhost:1313/room4A.dev/posts/cuckoo_filters/</link>
-      <pubDate>Sat, 26 Jul 2025 16:31:28 +0200</pubDate>
+      <pubDate>Mon, 28 Jul 2025 01:31:28 +0200</pubDate>
       <guid>http://localhost:1313/room4A.dev/posts/cuckoo_filters/</guid>
       <description>&lt;p&gt;Let&amp;rsquo;s get this out of the way: no, this post isn&amp;rsquo;t about &lt;a href=&#34;https://en.wikipedia.org/wiki/Ornithology&#34;&gt;ornithology&lt;/a&gt;. And yes, I did choose this topic &lt;em&gt;at least partly&lt;/em&gt; because of the name: &lt;strong&gt;Cuckoo&lt;/strong&gt;.&lt;/p&gt;&#xA;&lt;p&gt;Go ahead, say it out loud: &lt;em&gt;“Cuckoo.”&lt;/em&gt;&lt;/p&gt;&#xA;&lt;p&gt;But while the name comes from a famously pushy bird species, what we&amp;rsquo;re really talking about here is a very clever and very efficient &lt;strong&gt;probabilistic data structure&lt;/strong&gt;: the &lt;strong&gt;Cuckoo filter&lt;/strong&gt;.&lt;/p&gt;&#xA;&lt;p&gt;Unlike its avian namesake, this filter isn&amp;rsquo;t interested in nests, it&amp;rsquo;s more into fast lookups, low memory usage, and an ability to delete things (a rare treat in this data structure family).&lt;/p&gt;</description>
     </item>
