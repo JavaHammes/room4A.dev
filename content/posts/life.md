@@ -1,6 +1,6 @@
 ---
 title: "Thoughts on life"
-date: 2025-12-08T13:26:00+01:00
+date: 2025-12-07T13:26:00+01:00
 draft: false
 ---
 
