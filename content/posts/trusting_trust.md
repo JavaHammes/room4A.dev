@@ -118,7 +118,7 @@ c = 10;  // ASCII code for newline
 
 You use the actual number instead of the fancy escape character.
 
-Now you compile the compiler, and the result is a binary that understands this translation. That binary, the compiled compiler, now knows that `'n'` maps to `10` in this context.
+Now you compile the compiler, and the result is a binary that understands this translation. That binary, the compiled compiler, now knows that `'\n'` maps to `10` in this context.
 
 So later, you can go back and write:
 
@@ -132,7 +132,7 @@ But here's the thing...
 
 At this point, the source code doesn't say anything about the number `10`. It just says `'\n'`. But the compiler knows what that means, because the version you built earlier hardcoded it.
 
-That knowledge, the fact that `'n'` = `newline` = `ASCII 10`, only exists in the binary now.
+That knowledge, the fact that `'\n'` = `newline` = `ASCII 10`, only exists in the binary now.
 
 The compiler learned it.
 
