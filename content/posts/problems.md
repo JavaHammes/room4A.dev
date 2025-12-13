@@ -6,7 +6,7 @@ title = 'How to Solve Hard Problems'
 
 A friend once asked me how I actually think when I try to solve a problem.
 
-I realized that I had never consciously reflected on this. After some thought, I noticed that my approach usually follows a small set of recurring principles. Below are four core ideas that guide how I approach problem-solving.
+I realized that I had never consciously reflected on this. After some thought, I noticed that my approach tends to follow a small set of recurring principles. Below are the core ideas that guide how I approach problem-solving.
 
 **General principles:**
 1. Always aim for the simplest solution that fully addresses the problem. A short, clean solution is almost always preferable to a complex one that achieves the same outcome. Introducing unnecessary complexity is usually a sign that the problem has not been fully understood.
