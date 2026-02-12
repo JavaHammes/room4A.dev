@@ -14,10 +14,9 @@ I gained these insights mainly from:
 1. Know who you are.
 2. Know what is real.
 3. Do not fear.
-4. You need to calm down.
-5. Be grateful.
-6. What you think is your weakness might actually be your greatest strength.
-7. Stop comparing yourself to others.
+4. Be grateful.
+5. What you think is your weakness might actually be your greatest strength.
+6. Stop comparing yourself to others.
 
 And as Nietzsche said:
 
@@ -27,9 +26,7 @@ Man, the bravest animal and most prone to suffer, does not deny suffering as suc
 
 To continue:
 
-1. There is no inherent meaning of life. The sole meaning of life is evolution.
-2. Individuals do not matter; the DNA of the species does.
-3. Fuck money! Seek knowledge.
+1. Fuck money! Seek knowledge.
 
 George Hotz with some wise words on this:
 
@@ -38,8 +35,6 @@ I want money. I have high TC. I get big compensation. I advance in my career. I 
 
 lol you got laid off from an ad company after spending half your life chasing stuff made up by other men. you sought status instead of skill. you are a loser. get the fuck out.
 ```
-
-War might be an essential part of evolution. If we colonize other planets, there will be war. This is good. Humanity’s fear of war is good.
 
 Lastly, I want to finish with a quote from Seth’s blog:
 
